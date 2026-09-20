@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../supabaseClient'; // Adjust path as needed
+import { supabase } from '../lib/supabaseClient';
 
 export default function AdminRequestsTable() {
     const [requests, setRequests] = useState([]);
