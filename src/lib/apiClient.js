@@ -85,7 +85,27 @@ export async function runSecurityAudit(target, authConfirmed = true) {
       body: JSON.stringify({ target, authorization_confirmed: authConfirmed })
     });
     if (res.ok) {
-      return await res.json();
+      const report = await res.json();
+      if (isSupabaseConfigured) {
+        try {
+          await supabase.from('security_audits').insert([{
+            id: report.scan_id,
+            target: report.target,
+            resolved_ip: report.resolved_ip,
+            overall_score: report.overall_score,
+            grade: report.grade,
+            scan_duration_ms: report.scan_duration_ms,
+            summary: report.summary,
+            ports: report.ports,
+            headers: report.headers,
+            ssl_info: report.ssl_info,
+            recommendations: report.recommendations
+          }]);
+        } catch (err) {
+          console.warn('Could not persist audit report to Supabase:', err);
+        }
+      }
+      return report;
     }
   } catch (e) {
     console.warn('Backend audit scan API offline, producing structured client audit result');
@@ -136,6 +156,25 @@ export async function runSecurityAudit(target, authConfirmed = true) {
       "Verify TLS cipher suites disable legacy TLS 1.0 and 1.1 fallback."
     ]
   };
+
+  if (isSupabaseConfigured) {
+    try {
+      await supabase.from('security_audits').insert([{
+        id: report.scan_id,
+        target: report.target,
+        overall_score: report.overall_score,
+        grade: report.grade,
+        scan_duration_ms: report.scan_duration_ms,
+        summary: report.summary,
+        ports: report.ports,
+        headers: report.headers,
+        ssl_info: report.ssl_info,
+        recommendations: report.recommendations
+      }]);
+    } catch (e) {
+      console.warn('Direct client Supabase audit save fallback skipped:', e);
+    }
+  }
 
   return report;
 }
