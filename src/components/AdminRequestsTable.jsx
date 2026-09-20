@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 
 export default function AdminRequestsTable() {
     const [requests, setRequests] = useState([]);
@@ -141,3 +141,4 @@ export default function AdminRequestsTable() {
         </div>
     );
 }
+
