@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { runSecurityAudit } from '../lib/api';
 
 export default function AdminRequestsTable() {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+
+    // Diagnostic Scan States
+    const [scanningTarget, setScanningTarget] = useState('');
+    const [isScanning, setIsScanning] = useState(false);
+    const [scanResult, setScanResult] = useState(null);
 
     useEffect(() => {
         fetchRequests();
@@ -26,6 +32,21 @@ export default function AdminRequestsTable() {
             setError(err.message);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRunScan = async (target) => {
+        try {
+            setIsScanning(true);
+            setScanningTarget(target);
+            setScanResult(null);
+
+            const data = await runSecurityAudit(target);
+            setScanResult(data);
+        } catch (err) {
+            alert(`Scan Error: ${err.message}`);
+        } finally {
+            setIsScanning(false);
         }
     };
 
@@ -82,6 +103,40 @@ export default function AdminRequestsTable() {
                     </div>
                 </header>
 
+                {/* Live Diagnostic Scan Result Drawer */}
+                {scanResult && (
+                    <div className="bg-[#121214] border border-emerald-500/30 rounded-lg p-5 space-y-4 shadow-2xl relative">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <span className="text-[10px] uppercase font-mono tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Diagnostic Report</span>
+                                <h3 className="text-lg font-medium text-zinc-100 mt-1">Target: {scanResult.target}</h3>
+                                <p className="text-xs text-zinc-400">Resolved IP: {scanResult.resolved_ip} | Grade: <span className="text-emerald-400 font-bold">{scanResult.grade}</span> ({scanResult.overall_score}/100)</p>
+                            </div>
+                            <button
+                                onClick={() => setScanResult(null)}
+                                className="text-zinc-500 hover:text-zinc-300 text-xs font-mono border border-zinc-800 px-2 py-1 rounded bg-zinc-900"
+                            >
+                                Close [X]
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+                            <div className="bg-[#09090b] p-3 rounded border border-zinc-800">
+                                <span className="text-zinc-500 block mb-1">SSL / TLS Protocol</span>
+                                <span className="text-zinc-200">{scanResult.ssl_info.protocol} ({scanResult.ssl_info.cipher})</span>
+                            </div>
+                            <div className="bg-[#09090b] p-3 rounded border border-zinc-800">
+                                <span className="text-zinc-500 block mb-1">Scan Duration</span>
+                                <span className="text-zinc-200">{scanResult.scan_duration_ms} ms</span>
+                            </div>
+                            <div className="bg-[#09090b] p-3 rounded border border-zinc-800">
+                                <span className="text-zinc-500 block mb-1">Medium Vulnerabilities</span>
+                                <span className="text-amber-400">{scanResult.summary.medium_vulnerabilities} detected</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Data Table */}
                 <div className="bg-[#0c0c0e] border border-zinc-800/80 rounded-lg overflow-hidden shadow-2xl">
                     <div className="overflow-x-auto">
@@ -93,13 +148,14 @@ export default function AdminRequestsTable() {
                                     <th className="px-6 py-4 font-medium">Target Scope</th>
                                     <th className="px-6 py-4 font-medium">Deployment Status</th>
                                     <th className="px-6 py-4 font-medium">Priority</th>
+                                    <th className="px-6 py-4 font-medium">Diagnostics</th>
                                     <th className="px-6 py-4 font-medium">Timestamp</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-800/50">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center">
+                                        <td colSpan="7" className="px-6 py-12 text-center">
                                             <div className="flex flex-col items-center justify-center gap-2 text-zinc-500">
                                                 <div className="w-4 h-4 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
                                                 <span className="font-mono text-xs">Negotiating handshake...</span>
@@ -108,13 +164,13 @@ export default function AdminRequestsTable() {
                                     </tr>
                                 ) : error ? (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-red-400/90 text-xs bg-red-950/10">
+                                        <td colSpan="7" className="px-6 py-12 text-center text-red-400/90 text-xs bg-red-950/10">
                                             ERR_CONNECTION: {error}
                                         </td>
                                     </tr>
                                 ) : filteredRequests.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="px-6 py-12 text-center text-zinc-600 text-sm">
+                                        <td colSpan="7" className="px-6 py-12 text-center text-zinc-600 text-sm">
                                             No active audits matching the current parameters.
                                         </td>
                                     </tr>
@@ -141,6 +197,15 @@ export default function AdminRequestsTable() {
                                                     }`}>
                                                     {req.priority || 'STANDARD'}
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button
+                                                    onClick={() => handleRunScan(req.target)}
+                                                    disabled={isScanning}
+                                                    className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 px-3 py-1.5 rounded transition-colors font-mono"
+                                                >
+                                                    {isScanning && scanningTarget === req.target ? 'Scanning...' : 'Run Diagnostic'}
+                                                </button>
                                             </td>
                                             <td className="px-6 py-4 text-xs text-zinc-500 font-mono">
                                                 {new Date(req.created_at).toLocaleString('en-US', {
