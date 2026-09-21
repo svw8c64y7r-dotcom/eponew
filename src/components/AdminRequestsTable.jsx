@@ -8,13 +8,37 @@ export default function AdminRequestsTable() {
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    // Diagnostic Scan States
+    // Row-level Diagnostic Scan States
     const [scanningTarget, setScanningTarget] = useState('');
-    const [isScanning, setIsScanning] = useState(false);
     const [scanResult, setScanResult] = useState(null);
 
     useEffect(() => {
         fetchRequests();
+
+        // Initialize Supabase Realtime Channel for live database synchronization
+        const channel = supabase
+            .channel('public:service_requests')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'service_requests' },
+                (payload) => {
+                    if (payload.eventType === 'INSERT') {
+                        setRequests((prev) => [payload.new, ...prev]);
+                    } else if (payload.eventType === 'UPDATE') {
+                        setRequests((prev) =>
+                            prev.map((req) => (req.id === payload.new.id ? payload.new : req))
+                        );
+                    } else if (payload.eventType === 'DELETE') {
+                        setRequests((prev) => prev.filter((req) => req.id !== payload.old.id));
+                    }
+                }
+            )
+            .subscribe();
+
+        // Cleanup subscription on component unmount
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const fetchRequests = async () => {
@@ -37,7 +61,6 @@ export default function AdminRequestsTable() {
 
     const handleRunScan = async (target) => {
         try {
-            setIsScanning(true);
             setScanningTarget(target);
             setScanResult(null);
 
@@ -46,7 +69,7 @@ export default function AdminRequestsTable() {
         } catch (err) {
             alert(`Scan Error: ${err.message}`);
         } finally {
-            setIsScanning(false);
+            setScanningTarget('');
         }
     };
 
@@ -201,10 +224,10 @@ export default function AdminRequestsTable() {
                                             <td className="px-6 py-4">
                                                 <button
                                                     onClick={() => handleRunScan(req.target)}
-                                                    disabled={isScanning}
+                                                    disabled={scanningTarget === req.target}
                                                     className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 px-3 py-1.5 rounded transition-colors font-mono"
                                                 >
-                                                    {isScanning && scanningTarget === req.target ? 'Scanning...' : 'Run Diagnostic'}
+                                                    {scanningTarget === req.target ? 'Scanning...' : 'Run Diagnostic'}
                                                 </button>
                                             </td>
                                             <td className="px-6 py-4 text-xs text-zinc-500 font-mono">
