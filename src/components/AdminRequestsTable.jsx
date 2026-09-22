@@ -98,11 +98,7 @@ export default function AdminRequestsTable() {
                         title: newTitle,
                         service_type: newServiceType,
                         target: newTarget,
-                        priority: newPriority,
-                        status: 'in_progress',
-                        created_at: new Date().toISOString(),
-                        assigned_lead: 'Epotech SecOps Team',
-                        notes: 'Initiated via command center modal'
+                        priority: newPriority
                     }
                 ]);
 
@@ -112,6 +108,7 @@ export default function AdminRequestsTable() {
             setNewTitle('');
             setNewTarget('');
             setIsModalOpen(false);
+            fetchRequests();
         } catch (err) {
             alert(`Failed to create request: ${err.message}`);
         } finally {
@@ -124,7 +121,7 @@ export default function AdminRequestsTable() {
             'in_progress': { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', dot: 'bg-blue-500', label: 'Active Audit' },
             'pending': { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', dot: 'bg-amber-500', label: 'Awaiting Auth' },
             'completed': { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', dot: 'bg-emerald-500', label: 'Secured' },
-            'default': { bg: 'bg-zinc-800/50', border: 'border-zinc-700', text: 'text-zinc-400', dot: 'bg-zinc-500', label: status }
+            'default': { bg: 'bg-zinc-800/50', border: 'border-zinc-700', text: 'text-zinc-400', dot: 'bg-zinc-500', label: status || 'In Progress' }
         };
         const config = statusConfig[status?.toLowerCase()] || statusConfig.default;
 
@@ -336,10 +333,10 @@ export default function AdminRequestsTable() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredRequests.map((req) => (
+                                    filteredRequests.main?.length !== 0 && filteredRequests.map((req) => (
                                         <tr key={req.id} className="hover:bg-zinc-900/30 transition-colors group">
                                             <td className="px-6 py-4 font-mono text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">
-                                                {req.id.replace('req_', '').substring(0, 8)}
+                                                {String(req.id).replace('req_', '').substring(0, 8)}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="font-medium text-zinc-200">{req.title}</div>
@@ -369,9 +366,9 @@ export default function AdminRequestsTable() {
                                                 </button>
                                             </td>
                                             <td className="px-6 py-4 text-xs text-zinc-500 font-mono">
-                                                {new Date(req.created_at).toLocaleString('en-US', {
+                                                {req.created_at ? new Date(req.created_at).toLocaleString('en-US', {
                                                     month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
-                                                })}
+                                                }) : 'N/A'}
                                             </td>
                                         </tr>
                                     ))
