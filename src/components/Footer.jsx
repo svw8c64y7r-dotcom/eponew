@@ -1,7 +1,8 @@
 import React from 'react';
-import { Shield, Lock, Cpu, CheckCircle2, Globe, FileText, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Shield, CheckCircle2, ExternalLink, Cpu } from 'lucide-react';
 
-export default function Footer({ setActiveTab }) {
+export default function Footer() {
   return (
     <footer className="bg-cyber-bg border-t border-cyber-border/60 relative overflow-hidden">
       {/* Glow background accent */}
@@ -12,12 +13,12 @@ export default function Footer({ setActiveTab }) {
           
           {/* Brand Info */}
           <div className="space-y-4 md:col-span-1">
-            <div className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
               <div className="w-9 h-9 rounded-lg bg-cyber-card border border-cyber-cyan/40 flex items-center justify-center">
                 <Shield className="w-5 h-5 text-cyber-cyan" />
               </div>
               <span className="text-xl font-bold tracking-wider text-white">EPOTECH</span>
-            </div>
+            </Link>
             <p className="text-xs text-cyber-muted leading-relaxed">
               Registered Cybersecurity & High-Performance Web Engineering Firm. Delivering enterprise-grade penetration testing, zero-day threat prevention, and bespoke web platforms.
             </p>
@@ -30,48 +31,49 @@ export default function Footer({ setActiveTab }) {
           {/* Solutions & Services */}
           <div>
             <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-cyber-cyan mb-4">Core Services</h4>
-            <ul className="space-y-2 text-sm text-cyber-muted">
+            <ul className="space-y-2 text-sm text-cyber-muted font-sans">
               <li>
-                <button onClick={() => setActiveTab('services')} className="hover:text-white transition">
+                <Link to="/services" className="hover:text-white transition">
                   Web Application Pentesting
-                </button>
+                </Link>
               </li>
               <li>
-                <button onClick={() => setActiveTab('services')} className="hover:text-white transition">
+                <Link to="/services" className="hover:text-white transition">
                   Custom Full-Stack Engineering
-                </button>
+                </Link>
               </li>
               <li>
-                <button onClick={() => setActiveTab('services')} className="hover:text-white transition">
+                <Link to="/services" className="hover:text-white transition">
                   Cloud Security Audit & CIS Hardening
-                </button>
+                </Link>
               </li>
               <li>
-                <button onClick={() => setActiveTab('services')} className="hover:text-white transition">
+                <Link to="/services" className="hover:text-white transition">
                   API Security & Rate Limit Verification
-                </button>
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Client Portal & Resources */}
+          {/* Client Portal & Command Center */}
           <div>
-            <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-cyber-cyan mb-4">Client Portal</h4>
-            <ul className="space-y-2 text-sm text-cyber-muted">
+            <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-cyber-cyan mb-4">Portals & Operations</h4>
+            <ul className="space-y-2 text-sm text-cyber-muted font-sans">
               <li>
-                <button onClick={() => setActiveTab('dashboard')} className="hover:text-white transition">
-                  Submit Service Request
-                </button>
+                <Link to="/dashboard" className="hover:text-white transition">
+                  Client Diagnostic Dashboard
+                </Link>
               </li>
               <li>
-                <button onClick={() => setActiveTab('dashboard')} className="hover:text-white transition">
-                  Real-Time Security Posture Scanner
-                </button>
+                <Link to="/admin" className="text-emerald-400 hover:text-emerald-300 font-mono text-xs flex items-center space-x-1.5 transition">
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>Epotech Command Center</span>
+                </Link>
               </li>
               <li>
-                <button onClick={() => setActiveTab('auth')} className="hover:text-white transition">
-                  Client Authentication
-                </button>
+                <Link to="/auth" className="hover:text-white transition">
+                  Client Portal Sign In
+                </Link>
               </li>
               <li>
                 <span className="text-cyber-muted/60 flex items-center space-x-1 cursor-not-allowed">
@@ -100,7 +102,7 @@ export default function Footer({ setActiveTab }) {
               </div>
             </div>
             <p className="text-[11px] text-cyber-muted">
-              All scans are run with client authorization checks in accordance with computer security mandates.
+              All scans are run with explicit client authorization checks in accordance with computer security mandates.
             </p>
           </div>
 

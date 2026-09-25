@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Shield, Terminal, Plus, Search, Server, Clock, CheckCircle2, AlertTriangle, Activity, Lock, RefreshCw } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { LayoutDashboard, Shield, Terminal, Plus, Server, Clock, RefreshCw, Activity, ArrowRight } from 'lucide-react';
 import { getServiceRequests, runSecurityAudit } from '../lib/apiClient';
 import AuditReportViewer from '../components/AuditReportViewer';
 import { INITIAL_AUDIT_REPORTS } from '../lib/mockData';
@@ -18,34 +19,69 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
 
   useEffect(() => {
     loadRequests();
+    const handleCreated = () => {
+      loadRequests();
+    };
+    window.addEventListener('epotech:request_created', handleCreated);
+    return () => {
+      window.removeEventListener('epotech:request_created', handleCreated);
+    };
   }, []);
 
   const loadRequests = async () => {
     setLoadingRequests(true);
-    const data = await getServiceRequests();
-    setRequests(data);
-    setLoadingRequests(false);
+    try {
+      const data = await getServiceRequests();
+      setRequests(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.warn('[Epotech Dashboard] Error fetching service requests:', err);
+    } finally {
+      setLoadingRequests(false);
+    }
   };
 
   const handleRunAudit = async (e) => {
     e.preventDefault();
-    if (!targetHost) return;
+    if (!targetHost || !targetHost.trim()) return;
     setScanning(true);
     try {
-      const result = await runSecurityAudit(targetHost, authConfirmed);
-      setCurrentReport(result);
-      setPastReports(prev => [result, ...prev]);
+      const result = await runSecurityAudit(targetHost.trim(), authConfirmed);
+      if (result) {
+        setCurrentReport(result);
+        setPastReports(prev => [result, ...(Array.isArray(prev) ? prev : [])]);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('[Epotech Dashboard] Audit scan exception caught:', err);
     } finally {
       setScanning(false);
     }
   };
 
+  // Safe live status badge with smooth lowercase and missing string fallback
+  const getClientStatusBadge = (status) => {
+    const raw = typeof status === 'string' ? status.trim().toLowerCase().replace(/[-_ ]/g, '') : '';
+    if (raw === 'completed' || raw === 'secured' || raw === 'resolved' || raw === 'passed') {
+      return {
+        classes: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30',
+        label: 'SECURED'
+      };
+    }
+    if (raw === 'pending' || raw === 'awaitingauth' || raw === 'review' || raw === 'awaiting') {
+      return {
+        classes: 'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+        label: 'AWAITING AUTH'
+      };
+    }
+    return {
+      classes: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30',
+      label: 'ACTIVE AUDIT'
+    };
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
-      {/* Top Welcome Header */}
+      {/* Top Welcome Header with cross-portal navigation */}
       <div className="glass-panel p-6 rounded-2xl border border-cyber-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center space-x-2 text-xs font-mono text-cyber-cyan mb-1">
@@ -55,15 +91,25 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
           <h1 className="text-2xl font-bold text-white">
             Welcome back, <span className="text-cyber-cyan">{user?.email ? user.email.split('@')[0] : 'Authorized Client'}</span>
           </h1>
+          <p className="text-xs text-cyber-muted mt-1 font-mono">
+            Diagnostic Telemetry, Security Posture Rating & Scope Dispatch
+          </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/admin"
+            className="px-3.5 py-2 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan/50 text-cyber-cyan font-mono text-xs flex items-center space-x-1.5 transition"
+          >
+            <span>Command Center</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
           <button
             onClick={onRequestModalOpen}
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-semibold text-xs font-mono flex items-center space-x-2 shadow-cyber-cyan hover:opacity-95 transition"
           >
             <Plus className="w-4 h-4 text-black" />
-            <span>New Service Scope</span>
+            <span>+ New Service Scope</span>
           </button>
         </div>
       </div>
@@ -111,7 +157,7 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
                 <Clock className="w-4 h-4 text-cyber-cyan" />
               </div>
               <div className="text-3xl font-extrabold text-white">{requests.length}</div>
-              <div className="text-[11px] text-cyber-emerald font-mono">Assigned to Lead Auditors</div>
+              <div className="text-[11px] text-cyber-emerald font-mono">Assigned to Epotech SecOps Lead</div>
             </div>
 
             <div className="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-2">
@@ -159,7 +205,7 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
               <button
                 type="submit"
                 disabled={scanning}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-bold text-xs font-mono flex items-center justify-center space-x-2 shadow-cyber-cyan hover:opacity-95"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-bold text-xs font-mono flex items-center justify-center space-x-2 shadow-cyber-cyan hover:opacity-95 transition"
               >
                 {scanning ? (
                   <>
@@ -197,42 +243,58 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
             <h3 className="text-lg font-bold text-white font-mono">Service Engagement Requests</h3>
             <button
               onClick={loadRequests}
-              className="p-2 rounded-lg bg-cyber-card border border-cyber-border text-cyber-muted hover:text-white"
+              disabled={loadingRequests}
+              className="p-2 rounded-lg bg-cyber-card border border-cyber-border text-cyber-muted hover:text-white disabled:opacity-50"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className={`w-4 h-4 ${loadingRequests ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
           <div className="space-y-4">
-            {requests.map((req) => (
-              <div key={req.id} className="p-6 rounded-2xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan/30 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <div className="flex items-center space-x-3 mb-1">
-                    <span className="px-2.5 py-0.5 rounded bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-mono text-[11px]">
-                      {req.id}
-                    </span>
-                    <span className="text-xs font-mono text-cyber-muted">{req.service_type}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase ${
-                      req.priority === 'critical' ? 'bg-cyber-red/20 text-cyber-red' : 'bg-cyber-amber/20 text-cyber-amber'
-                    }`}>
-                      {req.priority} Priority
-                    </span>
-                  </div>
-                  <h4 className="text-base font-bold text-white">{req.title}</h4>
-                  <div className="text-xs font-mono text-cyber-muted mt-1">Target: <span className="text-cyber-cyan">{req.target}</span> • Lead: {req.assigned_lead}</div>
-                </div>
-
-                <div className="flex items-center space-x-3">
-                  <span className={`px-3 py-1 rounded-full text-xs font-mono font-semibold ${
-                    req.status === 'completed' ? 'bg-cyber-emerald/10 text-cyber-emerald border border-cyber-emerald/30' :
-                    req.status === 'in_progress' ? 'bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30' :
-                    'bg-cyber-amber/10 text-cyber-amber border border-cyber-amber/30'
-                  }`}>
-                    {req.status.replace('_', ' ').toUpperCase()}
-                  </span>
-                </div>
+            {requests.length === 0 ? (
+              <div className="p-8 rounded-2xl bg-cyber-card border border-cyber-border text-center space-y-3 font-mono text-xs text-cyber-muted">
+                <p>No active engagement requests recorded.</p>
+                <button
+                  onClick={onRequestModalOpen}
+                  className="px-4 py-2 rounded-xl bg-cyber-cyan text-black font-semibold font-mono"
+                >
+                  + Create First Engagement
+                </button>
               </div>
-            ))}
+            ) : (
+              requests.map((req, idx) => {
+                const badge = getClientStatusBadge(req.status);
+                const reqKey = req.id || `dashboard-req-${idx}`;
+                const displayId = req.id ? String(req.id).replace(/^req_/, '').substring(0, 8) : `ID-${idx}`;
+                return (
+                  <div key={reqKey} className="p-6 rounded-2xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan/30 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                      <div className="flex items-center space-x-3 mb-1">
+                        <span className="px-2.5 py-0.5 rounded bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan font-mono text-[11px]">
+                          {displayId}
+                        </span>
+                        <span className="text-xs font-mono text-cyber-muted">{req.service_type || 'Penetration Testing'}</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase ${
+                          req.priority === 'critical' ? 'bg-cyber-red/20 text-cyber-red' : 'bg-cyber-amber/20 text-cyber-amber'
+                        }`}>
+                          {req.priority || 'high'} Priority
+                        </span>
+                      </div>
+                      <h4 className="text-base font-bold text-white">{req.title || 'Security Engagement'}</h4>
+                      <div className="text-xs font-mono text-cyber-muted mt-1">
+                        Target: <span className="text-cyber-cyan">{req.target || 'N/A'}</span> • Lead: {req.assigned_lead || 'Epotech SecOps Team'}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-3 py-1 rounded-full text-xs font-mono font-semibold ${badge.classes}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}

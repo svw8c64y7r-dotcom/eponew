@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Key, Shield, ArrowRight, UserPlus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, Mail, Key, ArrowRight, UserPlus, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
-export default function AuthPage({ onAuthSuccess, setActiveTab }) {
+export default function AuthPage({ onAuthSuccess }) {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,8 +24,11 @@ export default function AuthPage({ onAuthSuccess, setActiveTab }) {
         if (isLogin) {
           const { data, error } = await supabase.auth.signInWithPassword({ email, password });
           if (error) throw error;
-          onAuthSuccess(data.user);
-          setActiveTab('dashboard');
+          if (data && data.user) {
+            localStorage.setItem('epotech_user', JSON.stringify(data.user));
+            if (onAuthSuccess) onAuthSuccess(data.user);
+            navigate('/dashboard');
+          }
         } else {
           const { data, error } = await supabase.auth.signUp({ email, password });
           if (error) throw error;
@@ -38,7 +43,7 @@ export default function AuthPage({ onAuthSuccess, setActiveTab }) {
       return;
     }
 
-    // Client session fallback when Supabase keys are not set
+    // Client session fallback when Supabase keys are demo/placeholder
     setTimeout(() => {
       const mockUser = {
         id: `user_${Math.floor(100 + Math.random() * 900)}`,
@@ -46,10 +51,11 @@ export default function AuthPage({ onAuthSuccess, setActiveTab }) {
         role: 'Authenticated Client',
         token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.epotech.mock.token'
       };
-      onAuthSuccess(mockUser);
+      localStorage.setItem('epotech_user', JSON.stringify(mockUser));
+      if (onAuthSuccess) onAuthSuccess(mockUser);
       setLoading(false);
-      setActiveTab('dashboard');
-    }, 800);
+      navigate('/dashboard');
+    }, 600);
   };
 
   return (

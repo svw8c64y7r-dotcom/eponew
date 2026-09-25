@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Shield, Send, CheckCircle2, Lock } from 'lucide-react';
+import { X, Shield, Send, CheckCircle2 } from 'lucide-react';
 import { createServiceRequest } from '../lib/apiClient';
 
 export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
@@ -18,17 +18,39 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.title.trim() || !formData.target.trim()) return;
+
     setSubmitting(true);
     try {
-      const res = await createServiceRequest(formData);
+      // Standardized unified schema object with all 8 fields
+      const unifiedPayload = {
+        id: `req_${Date.now()}_${Math.floor(100 + Math.random() * 900)}`,
+        title: formData.title.trim(),
+        service_type: formData.service_type,
+        target: formData.target.trim(),
+        priority: formData.priority,
+        status: 'in_progress',
+        assigned_lead: 'Epotech SecOps Team',
+        notes: (formData.notes || '').trim()
+      };
+
+      const res = await createServiceRequest(unifiedPayload);
       setSuccessMsg(true);
       setTimeout(() => {
         setSuccessMsg(false);
         setSubmitting(false);
+        setFormData({
+          title: '',
+          service_type: 'Penetration Testing',
+          target: '',
+          priority: 'high',
+          notes: ''
+        });
         if (onRequestCreated) onRequestCreated(res);
         onClose();
       }, 1200);
     } catch (err) {
+      console.error('[Epotech Modal] Error dispatching request:', err);
       setSubmitting(false);
     }
   };
@@ -60,7 +82,7 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
           <div className="py-12 text-center space-y-3">
             <CheckCircle2 className="w-16 h-16 text-cyber-emerald mx-auto animate-bounce" />
             <h4 className="text-lg font-bold text-white">Request Dispatched Successfully!</h4>
-            <p className="text-xs text-cyber-muted font-mono">Assigned to SecOps lead. Track updates in your dashboard.</p>
+            <p className="text-xs text-cyber-muted font-mono">Assigned to Epotech SecOps Lead. Track updates in your dashboard.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

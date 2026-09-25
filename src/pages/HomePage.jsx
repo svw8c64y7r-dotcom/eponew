@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Hero from '../components/Hero';
 import ServiceCard from '../components/ServiceCard';
-import { Shield, Code, Lock, Server, Terminal, CheckCircle2, ArrowRight, Zap, Cpu, FileCheck } from 'lucide-react';
+import { Shield, Code, Lock, Server, ArrowRight, Cpu, FileCheck } from 'lucide-react';
 
-export default function HomePage({ setActiveTab, onRequestModalOpen }) {
+export default function HomePage({ onRequestModalOpen }) {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-20 pb-20">
       
       {/* Animated Hero Section */}
       <Hero 
-        onExploreServices={() => setActiveTab('services')}
+        onExploreServices={() => navigate('/services')}
         onRequestAudit={onRequestModalOpen}
       />
 
@@ -43,7 +46,7 @@ export default function HomePage({ setActiveTab, onRequestModalOpen }) {
               "REST & GraphQL API Authentication Bypass Auditing",
               "Executive Vulnerability Remediation Reports with Code Diffs"
             ]}
-            onSelect={() => setActiveTab('services')}
+            onSelect={() => navigate('/services')}
           />
 
           <ServiceCard
@@ -58,7 +61,7 @@ export default function HomePage({ setActiveTab, onRequestModalOpen }) {
               "Sub-100ms Response Times & Serverless Edge Deployment",
               "Built-In Security Hardening & Strict Content Security Policies"
             ]}
-            onSelect={() => setActiveTab('services')}
+            onSelect={() => navigate('/services')}
           />
 
         </div>
@@ -73,13 +76,13 @@ export default function HomePage({ setActiveTab, onRequestModalOpen }) {
               <div className="text-xs font-mono text-cyber-cyan uppercase tracking-wider mb-2 font-semibold">THE EPOTECH ADVANTAGE</div>
               <h2 className="text-3xl font-extrabold text-white">Built for Security-Conscious Organizations</h2>
             </div>
-            <button
-              onClick={() => setActiveTab('services')}
+            <Link
+              to="/services"
               className="mt-4 md:mt-0 text-xs font-mono text-cyber-cyan hover:text-white flex items-center space-x-1"
             >
               <span>View Full Service Matrix</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -129,12 +132,12 @@ export default function HomePage({ setActiveTab, onRequestModalOpen }) {
               >
                 Submit Engagement Request
               </button>
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl glass-panel text-white font-medium text-sm hover:bg-white/5 transition"
+              <Link
+                to="/dashboard"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl glass-panel text-white font-medium text-sm hover:bg-white/5 transition flex items-center justify-center"
               >
                 Access Security Portal
-              </button>
+              </Link>
             </div>
           </div>
         </div>

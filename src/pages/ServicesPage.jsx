@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Shield, Code, Server, Lock, CheckCircle2, ArrowRight, Terminal, Zap, FileCheck, Layers } from 'lucide-react';
+import { Terminal, CheckCircle2, ArrowRight } from 'lucide-react';
 
-export default function ServicesPage({ onRequestModalOpen, setActiveTab }) {
+export default function ServicesPage({ onRequestModalOpen }) {
   const [activeCategory, setActiveCategory] = useState('all');
 
   const servicesList = [
@@ -132,7 +132,7 @@ export default function ServicesPage({ onRequestModalOpen, setActiveTab }) {
               <div className="space-y-3 mb-8">
                 <div className="text-xs font-mono text-cyber-cyan uppercase font-semibold">Key Deliverables:</div>
                 {srv.deliverables.map((del, i) => (
-                  <div key={i} className="flex items-start space-x-2 text-xs text-cyber-text font-sans">
+                  <div key={`${srv.id}-del-${i}`} className="flex items-start space-x-2 text-xs text-cyber-text font-sans">
                     <CheckCircle2 className="w-4 h-4 text-cyber-emerald flex-shrink-0 mt-0.5" />
                     <span>{del}</span>
                   </div>

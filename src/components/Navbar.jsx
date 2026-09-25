@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { Shield, Lock, LayoutDashboard, Terminal, Menu, X, ArrowRight, UserCheck } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Shield, Lock, LayoutDashboard, Terminal, Menu, X, ArrowRight, UserCheck, Cpu } from 'lucide-react';
 
-export default function Navbar({ activeTab, setActiveTab, user, onLogout }) {
+export default function Navbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   const navLinks = [
-    { id: 'home', label: 'Home', icon: Shield },
-    { id: 'services', label: 'Services & Security', icon: Terminal },
-    { id: 'dashboard', label: 'Client Dashboard', icon: LayoutDashboard },
+    { path: '/', label: 'Home', icon: Shield },
+    { path: '/services', label: 'Services & Security', icon: Terminal },
+    { path: '/dashboard', label: 'Client Dashboard', icon: LayoutDashboard },
+    { path: '/admin', label: 'Command Center', icon: Cpu, isSecOps: true },
   ];
 
   return (
@@ -16,9 +20,9 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout }) {
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <div 
+          <Link 
+            to="/"
             className="flex items-center space-x-3 cursor-pointer group"
-            onClick={() => setActiveTab('home')}
           >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-cyan to-cyber-blue p-[1px] shadow-cyber-cyan transition-transform group-hover:scale-105">
               <div className="w-full h-full bg-cyber-bg rounded-[11px] flex items-center justify-center">
@@ -29,32 +33,39 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout }) {
               <span className="text-xl font-extrabold tracking-wider text-white">EPOTECH</span>
               <span className="block text-[10px] font-mono tracking-widest text-cyber-cyan uppercase font-semibold">Cybersecurity & Web</span>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-1 bg-cyber-bg/60 p-1.5 rounded-xl border border-cyber-border/40">
             {navLinks.map((link) => {
               const Icon = link.icon;
-              const isActive = activeTab === link.id;
+              const isActive = currentPath === link.path;
               return (
-                <button
-                  key={link.id}
-                  onClick={() => setActiveTab(link.id)}
-                  className={`flex items-center space-x-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive 
-                      ? 'bg-cyber-card text-cyber-cyan border border-cyber-cyan/30 shadow-cyber-cyan/20 shadow-md' 
+                      ? 'bg-cyber-card text-cyber-cyan border border-cyber-cyan/30 shadow-cyber-cyan/20 shadow-md font-semibold' 
+                      : link.isSecOps
+                      ? 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
                       : 'text-cyber-muted hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-cyber-cyan' : ''}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-cyber-cyan' : link.isSecOps ? 'text-emerald-400' : ''}`} />
                   <span>{link.label}</span>
-                </button>
+                  {link.isSecOps && (
+                    <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                      OPS
+                    </span>
+                  )}
+                </Link>
               );
             })}
           </nav>
 
-          {/* User Auth Button */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* User Auth & System Status */}
+          <div className="hidden md:flex items-center space-x-3">
             <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-cyber-emerald/10 border border-cyber-emerald/30 text-cyber-emerald text-xs font-mono">
               <span className="w-2 h-2 rounded-full bg-cyber-emerald animate-pulse"></span>
               <span>SYSTEM ONLINE</span>
@@ -62,26 +73,31 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout }) {
 
             {user ? (
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-cyber-card border border-cyber-border text-xs text-cyber-text font-mono">
+                <Link 
+                  to="/dashboard"
+                  className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-cyber-card border border-cyber-border text-xs text-cyber-text font-mono hover:border-cyber-cyan/40 transition"
+                >
                   <UserCheck className="w-4 h-4 text-cyber-cyan" />
                   <span className="truncate max-w-[120px]">{user.email || 'Client Portal'}</span>
-                </div>
+                </Link>
                 <button
                   onClick={onLogout}
-                  className="px-3.5 py-1.5 rounded-lg border border-cyber-border text-xs text-cyber-muted hover:text-white hover:bg-white/5 transition"
+                  className="px-3.5 py-1.5 rounded-lg border border-cyber-border text-xs text-cyber-muted hover:text-white hover:bg-white/5 transition font-mono"
                 >
                   Sign Out
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => setActiveTab('auth')}
-                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-semibold text-sm hover:opacity-95 transition-all shadow-cyber-cyan hover:shadow-lg"
-              >
-                <Lock className="w-4 h-4 text-black" />
-                <span>Client Access</span>
-                <ArrowRight className="w-4 h-4 text-black" />
-              </button>
+              <div className="flex items-center space-x-2">
+                <Link
+                  to="/auth"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-semibold text-xs hover:opacity-95 transition-all shadow-cyber-cyan"
+                >
+                  <Lock className="w-3.5 h-3.5 text-black" />
+                  <span>Client Access</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-black" />
+                </Link>
+              </div>
             )}
           </div>
 
@@ -102,21 +118,26 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout }) {
         <div className="md:hidden px-4 pt-2 pb-6 bg-cyber-card/95 border-b border-cyber-border space-y-3">
           {navLinks.map((link) => {
             const Icon = link.icon;
-            const isActive = activeTab === link.id;
+            const isActive = currentPath === link.path;
             return (
-              <button
-                key={link.id}
-                onClick={() => {
-                  setActiveTab(link.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition ${
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition ${
                   isActive ? 'bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30' : 'text-cyber-muted'
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                <span>{link.label}</span>
-              </button>
+                <div className="flex items-center space-x-3">
+                  <Icon className="w-5 h-5" />
+                  <span>{link.label}</span>
+                </div>
+                {link.isSecOps && (
+                  <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                    SECOPS
+                  </span>
+                )}
+              </Link>
             );
           })}
           
@@ -127,20 +148,19 @@ export default function Navbar({ activeTab, setActiveTab, user, onLogout }) {
                   onLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2.5 rounded-lg border border-cyber-border text-sm text-cyber-muted"
+                className="w-full py-2.5 rounded-lg border border-cyber-border text-sm text-cyber-muted font-mono"
               >
-                Sign Out
+                Sign Out ({user.email || 'Client'})
               </button>
             ) : (
-              <button
-                onClick={() => {
-                  setActiveTab('auth');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full py-3 rounded-lg bg-cyber-cyan text-black font-semibold text-sm"
+              <Link
+                to="/auth"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-3 rounded-lg bg-cyber-cyan text-black font-semibold text-sm text-center flex items-center justify-center space-x-2"
               >
-                Client Portal Access
-              </button>
+                <Lock className="w-4 h-4 text-black" />
+                <span>Client Portal Access</span>
+              </Link>
             )}
           </div>
         </div>

@@ -4,7 +4,13 @@
 -- https://supabase.com/dashboard/project/_/sql
 -- ========================================================
 
--- 1. Create Service Requests Table
+-- Migration: Explicitly support all service_requests fields on existing databases
+ALTER TABLE public.service_requests 
+ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'in_progress',
+ADD COLUMN IF NOT EXISTS assigned_lead TEXT DEFAULT 'Epotech SecOps Team',
+ADD COLUMN IF NOT EXISTS notes TEXT;
+
+-- 1. Create Service Requests Table (if starting from scratch)
 CREATE TABLE IF NOT EXISTS public.service_requests (
     id TEXT PRIMARY KEY DEFAULT ('req_' || floor(extract(epoch from now()) * 1000)::text),
     user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,

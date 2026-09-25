@@ -62,10 +62,13 @@ MEMORY_SERVICE_REQUESTS = [
 
 # --- Pydantic Data Models ---
 class ServiceRequestCreate(BaseModel):
+    id: Optional[str] = Field(default=None, example="req_1234")
     title: str = Field(..., example="Web Security Audit")
     service_type: str = Field(..., example="Penetration Testing")
     target: str = Field(..., example="app.epotech.io")
     priority: str = Field(default="high")
+    status: Optional[str] = Field(default="in_progress")
+    assigned_lead: Optional[str] = Field(default="Epotech SecOps Team")
     notes: Optional[str] = Field(default="")
 
 class SecurityAuditRequest(BaseModel):
@@ -114,15 +117,15 @@ def get_service_requests():
 def create_service_request(req: ServiceRequestCreate):
     """Create a new Web Dev or Penetration Testing engagement request"""
     new_record = {
-        "id": f"req_{int(time.time() * 1000) % 10000}",
+        "id": req.id or f"req_{int(time.time() * 1000) % 10000}",
         "title": req.title,
         "service_type": req.service_type,
         "target": req.target,
         "priority": req.priority,
-        "status": "in_progress",
+        "status": req.status or "in_progress",
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "assigned_lead": "Epotech SecOps Team",
-        "notes": req.notes
+        "assigned_lead": req.assigned_lead or "Epotech SecOps Team",
+        "notes": req.notes or ""
     }
 
     if supabase_client:
