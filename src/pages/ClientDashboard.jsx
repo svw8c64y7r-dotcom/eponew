@@ -10,8 +10,11 @@ export default function ClientDashboard() {
             </div>
 
             {/* Multi-Vector Security Scanner Integration */}
-            <div className="space-y-4">
-                <h2 className="text-lg font-bold text-white font-mono">Security Operations & Reconnaissance</h2>
+            <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <h2 className="text-xl font-bold text-white font-mono">Security Operations & Reconnaissance</h2>
+                <p className="text-xs text-cyber-muted font-mono">
+                    Execute live non-blocking probes across TCP ports, target web headers, and SSL certificates via the FastAPI backend.
+                </p>
                 <ComprehensiveScanner />
             </div>
         </div>
