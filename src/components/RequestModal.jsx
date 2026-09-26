@@ -20,9 +20,18 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
     e.preventDefault();
     if (!formData.title.trim() || !formData.target.trim()) return;
 
+    // 1. Retrieve the authenticated user session
+    const userStr = localStorage.getItem('epotech_user');
+    const currentUser = userStr ? JSON.parse(userStr) : null;
+
+    if (!currentUser) {
+      alert("Authentication error: Please log in to submit a request.");
+      return;
+    }
+
     setSubmitting(true);
     try {
-      // Standardized unified schema object with all 8 fields
+      // 2. Standardized unified schema object including user linking
       const unifiedPayload = {
         id: `req_${Date.now()}_${Math.floor(100 + Math.random() * 900)}`,
         title: formData.title.trim(),
@@ -31,7 +40,9 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
         priority: formData.priority,
         status: 'in_progress',
         assigned_lead: 'Epotech SecOps Team',
-        notes: (formData.notes || '').trim()
+        notes: (formData.notes || '').trim(),
+        user_id: currentUser.id,
+        user_email: currentUser.email
       };
 
       const res = await createServiceRequest(unifiedPayload);
@@ -58,7 +69,7 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
       <div className="relative w-full max-w-lg p-6 rounded-2xl glass-panel-glow border border-cyber-cyan/30 text-white shadow-2xl">
-        
+
         {/* Close Button */}
         <button
           onClick={onClose}
