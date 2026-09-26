@@ -9,12 +9,28 @@ import DashboardPage from './pages/DashboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RequestModal from './components/RequestModal';
 
-// Route Guard Component
-const ProtectedRoute = ({ user, children }) => {
+// 1. Define your authorized admin emails here
+const ADMIN_EMAILS = [
+  'admin@epoteck.com',
+  'sriragavsurya@gmail.com' // Replace with your actual admin email addresses
+];
+
+// 2. Updated Route Guard with Role Checking
+const ProtectedRoute = ({ user, children, requireAdmin = false }) => {
   if (!user) {
     // Not logged in -> Redirect to auth portal
     return <Navigate to="/auth" replace />;
   }
+
+  // If this route requires admin access, verify the user's email
+  if (requireAdmin) {
+    const userEmail = user.email?.toLowerCase(); // Ensure case-insensitive matching
+    if (!userEmail || !ADMIN_EMAILS.includes(userEmail)) {
+      // Logged in, but NOT an admin -> Redirect to client dashboard
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
   return children;
 };
 
@@ -42,81 +58,52 @@ export default function App() {
   };
 
   const handleRequestCreated = () => {
-    // Dispatch custom event to notify active views to refresh
     window.dispatchEvent(new CustomEvent('epotech:request_created'));
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-cyber-bg text-cyber-text selection:bg-cyber-cyan selection:text-black">
-      {/* Top Navbar */}
-      <Navbar
-        user={user}
-        onLogout={handleLogout}
-      />
+      <Navbar user={user} onLogout={handleLogout} />
 
-      {/* Main Routed Content */}
       <main className="flex-1">
         <Routes>
-          {/* Landing Page: Main marketing hero section */}
+          <Route path="/" element={<HomePage onRequestModalOpen={() => setIsRequestModalOpen(true)} />} />
+          <Route path="/services" element={<ServicesPage onRequestModalOpen={() => setIsRequestModalOpen(true)} />} />
+
           <Route
-            path="/"
-            element={<HomePage onRequestModalOpen={() => setIsRequestModalOpen(true)} />}
+            path="/auth"
+            element={user ? <Navigate to="/dashboard" replace /> : <AuthPage onAuthSuccess={(userData) => setUser(userData)} />}
           />
 
-          {/* Services Matrix */}
-          <Route
-            path="/services"
-            element={<ServicesPage onRequestModalOpen={() => setIsRequestModalOpen(true)} />}
-          />
-
-          {/* Client Portal: Secured with ProtectedRoute */}
+          {/* Client Portal: Only requires login */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute user={user}>
-                <DashboardPage
-                  user={user}
-                  onRequestModalOpen={() => setIsRequestModalOpen(true)}
-                />
+                <DashboardPage user={user} onRequestModalOpen={() => setIsRequestModalOpen(true)} />
               </ProtectedRoute>
             }
           />
 
-          {/* Command Center: Secured with ProtectedRoute */}
+          {/* Command Center: Requires login AND Admin Email */}
           <Route
             path="/admin"
             element={
-              <ProtectedRoute user={user}>
+              <ProtectedRoute user={user} requireAdmin={true}>
                 <AdminDashboard />
               </ProtectedRoute>
             }
           />
 
-          {/* Authentication Portal */}
-          <Route
-            path="/auth"
-            element={
-              user ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <AuthPage onAuthSuccess={(userData) => setUser(userData)} />
-              )
-            }
-          />
-
-          {/* Wildcard Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
-      {/* Global Request Modal */}
       <RequestModal
         isOpen={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
         onRequestCreated={handleRequestCreated}
       />
-
-      {/* Footer */}
       <Footer />
     </div>
   );
