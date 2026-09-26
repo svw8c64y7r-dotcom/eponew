@@ -58,7 +58,7 @@ export default function AdminRequestsTable() {
             if (channel && isSupabaseConfigured) {
                 try {
                     supabase.removeChannel(channel);
-                } catch (e) {}
+                } catch (e) { }
             }
         };
     }, []);
@@ -167,8 +167,11 @@ export default function AdminRequestsTable() {
         const targetStr = req.target ? String(req.target).toLowerCase() : '';
         const idStr = req.id ? String(req.id).toLowerCase() : '';
         const titleStr = req.title ? String(req.title).toLowerCase() : '';
+        const emailStr = req.user_email ? String(req.user_email).toLowerCase() : '';
         const query = (searchQuery || '').toLowerCase();
-        return targetStr.includes(query) || idStr.includes(query) || titleStr.includes(query);
+
+        // Include emailStr in the search filtering
+        return targetStr.includes(query) || idStr.includes(query) || titleStr.includes(query) || emailStr.includes(query);
     });
 
     return (
@@ -184,7 +187,7 @@ export default function AdminRequestsTable() {
                             <span className="px-2 py-0.5 rounded bg-zinc-800 border border-zinc-700 text-[10px] font-mono text-zinc-400">SECOPS ADMIN</span>
                         </div>
                         <p className="text-sm text-zinc-500">Enterprise Telemetry & Vulnerability Research Deployment</p>
-                        
+
                         {/* Explicit cross-portal quick-links */}
                         <div className="flex items-center gap-3 mt-3 text-xs font-mono">
                             <Link to="/dashboard" className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
@@ -200,7 +203,7 @@ export default function AdminRequestsTable() {
                     <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                         <input
                             type="text"
-                            placeholder="Search targets or IDs..."
+                            placeholder="Search targets, emails, or IDs..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="bg-[#121214] border border-zinc-800 text-sm rounded-md px-3 py-1.5 text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 w-full md:w-64 transition-all"
@@ -363,6 +366,7 @@ export default function AdminRequestsTable() {
                             <thead className="bg-[#121214] text-zinc-400 text-[11px] uppercase tracking-wider border-b border-zinc-800/80">
                                 <tr>
                                     <th className="px-6 py-4 font-medium">Req ID</th>
+                                    <th className="px-6 py-4 font-medium">Client / User</th> {/* NEW COLUMN */}
                                     <th className="px-6 py-4 font-medium">Audit Type</th>
                                     <th className="px-6 py-4 font-medium">Target Scope</th>
                                     <th className="px-6 py-4 font-medium">Deployment Status</th>
@@ -374,7 +378,8 @@ export default function AdminRequestsTable() {
                             <tbody className="divide-y divide-zinc-800/50">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-12 text-center">
+                                        {/* Updated colSpan from 7 to 8 */}
+                                        <td colSpan="8" className="px-6 py-12 text-center">
                                             <div className="flex flex-col items-center justify-center gap-2 text-zinc-500">
                                                 <div className="w-4 h-4 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
                                                 <span className="font-mono text-xs">Negotiating handshake...</span>
@@ -383,13 +388,15 @@ export default function AdminRequestsTable() {
                                     </tr>
                                 ) : error ? (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-12 text-center text-red-400/90 text-xs bg-red-950/10">
+                                        {/* Updated colSpan from 7 to 8 */}
+                                        <td colSpan="8" className="px-6 py-12 text-center text-red-400/90 text-xs bg-red-950/10">
                                             ERR_CONNECTION: {error}
                                         </td>
                                     </tr>
                                 ) : filteredRequests.length === 0 ? (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-12 text-center text-zinc-600 text-sm">
+                                        {/* Updated colSpan from 7 to 8 */}
+                                        <td colSpan="8" className="px-6 py-12 text-center text-zinc-600 text-sm">
                                             No active audits matching the current parameters.
                                         </td>
                                     </tr>
@@ -399,6 +406,15 @@ export default function AdminRequestsTable() {
                                             <td className="px-6 py-4 font-mono text-xs text-zinc-500 group-hover:text-zinc-400 transition-colors">
                                                 {req.id ? String(req.id).replace(/^req_/, '').substring(0, 8) : `ID-${idx}`}
                                             </td>
+
+                                            {/* NEW USER DATA COLUMN */}
+                                            <td className="px-6 py-4">
+                                                <div className="font-medium text-zinc-200">{req.user_email || 'Unknown User'}</div>
+                                                <div className="text-[10px] text-zinc-500 font-mono mt-0.5">
+                                                    ID: {req.user_id ? String(req.user_id).substring(0, 8) : 'N/A'}...
+                                                </div>
+                                            </td>
+
                                             <td className="px-6 py-4">
                                                 <div className="font-medium text-zinc-200">{req.title || 'Security Engagement'}</div>
                                                 <div className="text-xs text-zinc-500 mt-0.5">{req.service_type || 'Web Security Testing'}</div>
@@ -410,13 +426,12 @@ export default function AdminRequestsTable() {
                                                 {getStatusBadge(req.status)}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider ${
-                                                    req.priority === 'critical'
+                                                <span className={`px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider ${req.priority === 'critical'
                                                         ? 'text-red-400 bg-red-400/10 border border-red-400/20'
                                                         : req.priority === 'high'
-                                                        ? 'text-amber-400 bg-amber-400/10 border border-amber-400/20'
-                                                        : 'text-zinc-400 bg-zinc-800/50 border border-zinc-700/50'
-                                                }`}>
+                                                            ? 'text-amber-400 bg-amber-400/10 border border-amber-400/20'
+                                                            : 'text-zinc-400 bg-zinc-800/50 border border-zinc-700/50'
+                                                    }`}>
                                                     {req.priority || 'STANDARD'}
                                                 </span>
                                             </td>
