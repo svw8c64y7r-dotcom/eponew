@@ -9,6 +9,15 @@ import DashboardPage from './pages/DashboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RequestModal from './components/RequestModal';
 
+// Route Guard Component
+const ProtectedRoute = ({ user, children }) => {
+  if (!user) {
+    // Not logged in -> Redirect to auth portal
+    return <Navigate to="/auth" replace />;
+  }
+  return children;
+};
+
 export default function App() {
   const [user, setUser] = useState(() => {
     try {
@@ -60,21 +69,27 @@ export default function App() {
             element={<ServicesPage onRequestModalOpen={() => setIsRequestModalOpen(true)} />}
           />
 
-          {/* Client Portal: Diagnostic telemetry, security grade A+, new service scope */}
+          {/* Client Portal: Secured with ProtectedRoute */}
           <Route
             path="/dashboard"
             element={
-              <DashboardPage
-                user={user}
-                onRequestModalOpen={() => setIsRequestModalOpen(true)}
-              />
+              <ProtectedRoute user={user}>
+                <DashboardPage
+                  user={user}
+                  onRequestModalOpen={() => setIsRequestModalOpen(true)}
+                />
+              </ProtectedRoute>
             }
           />
 
-          {/* Command Center: View global requests, run row-level scans, manage audit targets */}
+          {/* Command Center: Secured with ProtectedRoute */}
           <Route
             path="/admin"
-            element={<AdminDashboard />}
+            element={
+              <ProtectedRoute user={user}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
           />
 
           {/* Authentication Portal */}
