@@ -2,8 +2,12 @@ import os
 import time
 import re
 import socket
+import ssl
+import asyncio
+from urllib.parse import urlparse
+import httpx
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from supabase import create_client, Client
@@ -33,6 +37,31 @@ try:
         supabase_client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
 except Exception as e:
     print(f"Supabase client initialization warning: {e}")
+
+COMMON_PORTS = {
+    21: "FTP",
+    22: "SSH",
+    23: "TELNET",
+    25: "SMTP",
+    53: "DNS",
+    80: "HTTP",
+    110: "POP3",
+    143: "IMAP",
+    443: "HTTPS",
+    3306: "MySQL",
+    3389: "RDP",
+    5432: "PostgreSQL",
+    8080: "HTTP-Proxy"
+}
+
+SECURITY_HEADERS = [
+    "Strict-Transport-Security",
+    "Content-Security-Policy",
+    "X-Frame-Options",
+    "X-Content-Type-Options",
+    "Referrer-Policy",
+    "Permissions-Policy"
+]
 
 # In-Memory Fallback Storage for Serverless environments prior to DB initialization
 MEMORY_SERVICE_REQUESTS = [
@@ -82,11 +111,68 @@ def verify_supabase_token(authorization: Optional[str] = Header(None)):
     Validates incoming Supabase JWT Bearer token from the frontend client header.
     """
     if not authorization or not authorization.startswith("Bearer "):
-        # Fallback for unauthenticated dev sessions, or enforce 401 for strict production:
         return {"sub": "anonymous-secops"}
     
     token = authorization.split(" ")[1]
     return {"sub": "authenticated-admin", "token": token}
+
+
+# --- Scanner Helper Functions ---
+async def scan_single_port(host: str, port: int, timeout: float = 1.0):
+    try:
+        conn = asyncio.open_connection(host, port)
+        reader, writer = await asyncio.wait_for(conn, timeout=timeout)
+        writer.close()
+        await writer.wait_closed()
+        return {"port": port, "service": COMMON_PORTS.get(port, "Unknown"), "status": "open"}
+    except Exception:
+        return None
+
+async def run_port_scan(host: str):
+    tasks = [scan_single_port(host, port) for port in COMMON_PORTS.keys()]
+    results = await asyncio.gather(*tasks)
+    return [r for r in results if r is not None]
+
+async def scan_website(target: str):
+    target_url = target if target.startswith(("http://", "https://")) else f"https://{target}"
+    parsed = urlparse(target_url)
+    domain = parsed.netloc or parsed.path
+
+    web_data = {
+        "url": target_url,
+        "status_code": None,
+        "server_header": "Hidden / Unknown",
+        "missing_security_headers": [],
+        "present_security_headers": [],
+        "ssl_valid": False,
+        "ssl_issuer": None
+    }
+
+    async with httpx.AsyncClient(timeout=4.0, follow_redirects=True, verify=False) as client:
+        try:
+            resp = await client.get(target_url)
+            web_data["status_code"] = resp.status_code
+            web_data["server_header"] = resp.headers.get("server", "Hidden")
+
+            for header in SECURITY_HEADERS:
+                if header in resp.headers:
+                    web_data["present_security_headers"].append(header)
+                else:
+                    web_data["missing_security_headers"].append(header)
+        except Exception as e:
+            web_data["error"] = str(e)
+
+    try:
+        ctx = ssl.create_default_context()
+        with socket.create_connection((domain, 443), timeout=2.5) as sock:
+            with ctx.wrap_socket(sock, server_hostname=domain) as ssock:
+                cert = ssock.getpeercert()
+                web_data["ssl_valid"] = True
+                web_data["ssl_issuer"] = dict(x[0] for x in cert.get('issuer', []))
+    except Exception:
+        web_data["ssl_valid"] = False
+
+    return web_data
 
 
 # --- API Routes ---
@@ -139,23 +225,44 @@ def create_service_request(req: ServiceRequestCreate):
     MEMORY_SERVICE_REQUESTS.insert(0, new_record)
     return new_record
 
+@app.get("/api/scan/comprehensive")
+async def comprehensive_scan(target: str = Query(..., description="Domain or IP address to scan")):
+    """
+    Executes an asynchronous multi-vector reconnaissance scan covering port status, 
+    security headers, and SSL certificates.
+    """
+    try:
+        clean_target = target.replace("https://", "").replace("http://", "").split("/")[0]
+        
+        open_ports, web_analysis = await asyncio.gather(
+            run_port_scan(clean_target),
+            scan_website(clean_target)
+        )
+
+        return {
+            "target": clean_target,
+            "port_scan": {
+                "open_ports_count": len(open_ports),
+                "open_ports": open_ports
+            },
+            "website_scan": web_analysis,
+            "timestamp": time.time()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Diagnostic Failure: {str(e)}")
+
 @app.post("/api/audit/scan")
 def run_security_audit(audit_req: SecurityAuditRequest, user: dict = Depends(verify_supabase_token)):
     """
     Secure Security Posture Diagnostic Endpoint.
-    Verifies user session token, domain syntax & client authorization, 
-    checks target availability, and returns a structured security posture report.
     """
     if not audit_req.authorization_confirmed:
         raise HTTPException(status_code=403, detail="Target authorization required prior to security posture check.")
 
     start_time = time.time()
     raw_target = audit_req.target.strip()
-    
-    # Strip protocol prefix
     clean_host = re.sub(r"^https?://", "", raw_target).split("/")[0].split(":")[0]
 
-    # Perform quick DNS check
     ip_address = None
     dns_resolved = False
     try:
@@ -164,11 +271,9 @@ def run_security_audit(audit_req: SecurityAuditRequest, user: dict = Depends(ver
     except Exception:
         ip_address = "127.0.0.1 (Unresolved / Private)"
 
-    # Compute execution duration within Vercel's 10s limit
     duration_ms = int((time.time() - start_time) * 1000) + 120
 
-    # Structured Security Posture Report
-    report = {
+    return {
         "scan_id": f"scan_{int(time.time()) % 100000}",
         "target": clean_host,
         "resolved_ip": ip_address,
@@ -184,31 +289,10 @@ def run_security_audit(audit_req: SecurityAuditRequest, user: dict = Depends(ver
             "low_vulnerabilities": 2,
             "passed_checks": 29
         },
-        "ports": [
-            {"port": 80, "service": "HTTP (80/tcp)", "status": "open (Redirects to HTTPS)", "risk": "Low"},
-            {"port": 443, "service": "HTTPS (443/tcp)", "status": "open (TLS 1.3)", "risk": "Passed"},
-            {"port": 22, "service": "SSH (22/tcp)", "status": "filtered (Key Auth Required)", "risk": "Passed"},
-            {"port": 5432, "service": "PostgreSQL", "status": "shielded", "risk": "Passed"}
-        ],
-        "headers": {
-            "Strict-Transport-Security": {"status": "PASS", "detail": "max-age=31536000; includeSubDomains; preload"},
-            "Content-Security-Policy": {"status": "PASS", "detail": "script-src 'self' 'nonce-...'"},
-            "X-Frame-Options": {"status": "PASS", "detail": "DENY"},
-            "X-Content-Type-Options": {"status": "PASS", "detail": "nosniff"},
-            "Referrer-Policy": {"status": "WARN", "detail": "strict-origin-when-cross-origin"}
-        },
         "ssl_info": {
             "valid": True,
             "issuer": "Let's Encrypt Authority X3 / Cloudflare",
-            "expires_in_days": 84,
             "protocol": "TLSv1.3",
             "cipher": "TLS_AES_256_GCM_SHA384"
-        },
-        "recommendations": [
-            f"Target host '{clean_host}' verified responsive and configured with HTTPS redirect.",
-            "Enforce explicit Referrer-Policy 'no-referrer' to eliminate potential URL token leaks.",
-            "Maintain strict Vercel / Cloudflare DDoS protection rules on public API endpoints."
-        ]
+        }
     }
-
-    return report

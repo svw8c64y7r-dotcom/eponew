@@ -235,3 +235,21 @@ export async function runSecurityAudit(target, authConfirmed = true) {
 
   return report;
 }
+
+/**
+ * Triggers the asynchronous multi-vector security scan on the FastAPI backend.
+ * @param {string} target - Domain or IP address to scan (e.g., app.target.com)
+ * @returns {Promise<Object>} Scan results containing port status, headers, and SSL data
+ */
+export async function runComprehensiveScan(target) {
+  try {
+    const response = await fetch(`/api/scan/comprehensive?target=${encodeURIComponent(target)}`);
+    if (!response.ok) {
+      throw new Error(`Server returned HTTP ${response.status}`);
+    }
+    return await response.json();
+  } catch (err) {
+    console.error('[Epotech Scanner] API Error:', err);
+    throw err;
+  }
+}
