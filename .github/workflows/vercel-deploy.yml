@@ -34,6 +34,9 @@ jobs:
       - name: Sync Lockfile
         run: pnpm install --no-frozen-lockfile
 
+      - name: Install Python uv tool
+        run: pip install uv
+
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
