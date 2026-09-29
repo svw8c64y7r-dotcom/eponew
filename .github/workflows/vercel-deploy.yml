@@ -22,6 +22,9 @@ jobs:
       - name: Install Node.js Dependencies
         run: npm install
 
+      - name: Install pnpm
+        run: npm install --global pnpm
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
