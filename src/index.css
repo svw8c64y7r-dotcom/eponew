@@ -53,6 +53,7 @@ body {
   background-color: var(--color-body);
   color: var(--color-text);
   font-family: var(--font-primary);
+  line-height: 1.65;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -61,10 +62,16 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-secondary);
   font-weight: 700;
+  letter-spacing: -0.025em;
   color: #ffffff;
+  line-height: 1.15;
 }
 
-/* Automark Highlight Span */
+h1 {
+  letter-spacing: -0.035em;
+}
+
+/* Subtle, authoritative highlight */
 .hasHighlight strong,
 .hasHighlight span.highlight {
   color: var(--color-primary);

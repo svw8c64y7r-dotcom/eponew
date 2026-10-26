@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, Key, ArrowRight, UserPlus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Lock, Mail, Key, ArrowRight, UserPlus, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 export default function AuthPage({ onAuthSuccess }) {
@@ -17,7 +17,7 @@ export default function AuthPage({ onAuthSuccess }) {
     const mockUser = {
       id: isAdmin ? 'user_demo_admin' : 'user_demo_client',
       email: userEmail,
-      role: isAdmin ? 'SecOps Administrator' : 'Authorized Client',
+      role: isAdmin ? 'Security Lead / Admin' : 'Authorized Client',
       token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.epotech.session.token'
     };
     localStorage.setItem('epotech_user', JSON.stringify(mockUser));
@@ -30,7 +30,7 @@ export default function AuthPage({ onAuthSuccess }) {
     setTimeout(() => {
       setDemoSession(userEmail);
       setLoading(false);
-    }, 400);
+    }, 300);
   };
 
   const handleSubmit = async (e) => {
@@ -39,7 +39,6 @@ export default function AuthPage({ onAuthSuccess }) {
     setError(null);
     setNotice(null);
 
-    // If Supabase is configured, attempt real Auth with fallback on network failure
     if (isSupabaseConfigured) {
       try {
         if (isLogin) {
@@ -55,7 +54,7 @@ export default function AuthPage({ onAuthSuccess }) {
         } else {
           const { error: sbError } = await supabase.auth.signUp({ email, password });
           if (sbError) throw sbError;
-          setNotice('Registration successful! Please check your email for confirmation or sign in.');
+          setNotice('Registration received. Please verify your email or sign in.');
           setIsLogin(true);
           setLoading(false);
           return;
@@ -64,11 +63,11 @@ export default function AuthPage({ onAuthSuccess }) {
         console.warn('[Epotech Auth] Supabase call failed or host unreachable:', err);
         const errMsg = err?.message || '';
         if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError') || errMsg.includes('getaddrinfo')) {
-          setNotice('Supabase host is currently unreachable. Connecting via secure local session...');
+          setNotice('Connecting through secure offline session...');
           setTimeout(() => {
             setDemoSession(email);
             setLoading(false);
-          }, 600);
+          }, 500);
           return;
         }
         setError(errMsg || 'Authentication failed. Please verify credentials.');
@@ -77,11 +76,10 @@ export default function AuthPage({ onAuthSuccess }) {
       }
     }
 
-    // Client session fallback when Supabase keys are not set
     setTimeout(() => {
-      setDemoSession(email || 'client@epoteck.io');
+      setDemoSession(email || 'client@epotech.io');
       setLoading(false);
-    }, 500);
+    }, 400);
   };
 
   return (
@@ -91,62 +89,48 @@ export default function AuthPage({ onAuthSuccess }) {
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-3">
-            <Lock className="w-6 h-6 text-primary" />
+            <ShieldCheck className="w-6 h-6 text-primary" />
           </div>
           <h2 className="text-2xl font-bold font-secondary text-white tracking-tight">
-            {isLogin ? 'Client Portal Sign In' : 'Register Authorized Client'}
+            {isLogin ? 'Sign in to Epotech Portal' : 'Register Authorized Client'}
           </h2>
-          <p className="text-xs text-text-dark font-mono">
-            {isLogin ? 'Access your active audits & service requests' : 'Create an account to submit pentest engagements'}
+          <p className="text-xs text-text-dark">
+            {isLogin ? 'Access active security engagements, reports, and audit telemetry.' : 'Create an account to submit new application testing scopes.'}
           </p>
         </div>
 
-        {/* Supabase Status Indicator */}
-        <div className="p-2.5 rounded-full bg-body border border-border text-center font-mono text-[11px] text-text-dark">
-          {isSupabaseConfigured ? (
-            <span className="text-emerald-400 flex items-center justify-center space-x-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Supabase Auth Engine Active</span>
-            </span>
-          ) : (
-            <span className="text-primary font-medium">
-              Demo Client Access Mode (Fast Login Active)
-            </span>
-          )}
-        </div>
-
         {error && (
-          <div className="p-3 rounded-2xl bg-secondary/10 border border-secondary/30 text-secondary text-xs font-mono flex items-center space-x-2">
+          <div className="p-3 rounded-2xl bg-secondary/10 border border-secondary/30 text-secondary text-xs flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {notice && (
-          <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono flex items-center space-x-2">
+          <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center space-x-2">
             <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
             <span>{notice}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 font-sans">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono text-text-dark mb-1.5">WORK EMAIL</label>
+            <label className="block text-xs text-text-dark font-medium mb-1.5">Work Email</label>
             <div className="relative">
               <Mail className="w-4 h-4 text-text-dark absolute left-4 top-3" />
               <input
                 type="email"
                 required
-                placeholder="secops@yourcompany.com"
+                placeholder="developer@yourcompany.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 rounded-full bg-body border border-border text-white text-sm placeholder-text-dark/50 focus:border-primary focus:outline-none"
+                className="w-full pl-11 pr-4 py-2.5 rounded-full bg-body border border-border text-white text-sm placeholder-text-dark/40 focus:border-primary focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-text-dark mb-1.5">PASSWORD</label>
+            <label className="block text-xs text-text-dark font-medium mb-1.5">Password</label>
             <div className="relative">
               <Key className="w-4 h-4 text-text-dark absolute left-4 top-3" />
               <input
@@ -156,7 +140,7 @@ export default function AuthPage({ onAuthSuccess }) {
                 placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 rounded-full bg-body border border-border text-white text-sm placeholder-text-dark/50 focus:border-primary focus:outline-none"
+                className="w-full pl-11 pr-4 py-2.5 rounded-full bg-body border border-border text-white text-sm placeholder-text-dark/40 focus:border-primary focus:outline-none"
               />
             </div>
           </div>
@@ -171,13 +155,13 @@ export default function AuthPage({ onAuthSuccess }) {
             ) : isLogin ? (
               <>
                 <Lock className="w-4 h-4" />
-                <span>Sign In to Portal</span>
+                <span>Continue to Portal</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             ) : (
               <>
                 <UserPlus className="w-4 h-4" />
-                <span>Create Client Account</span>
+                <span>Create Client Profile</span>
               </>
             )}
           </button>
@@ -191,31 +175,33 @@ export default function AuthPage({ onAuthSuccess }) {
               setError(null);
               setNotice(null);
             }}
-            className="text-xs font-mono text-primary hover:underline cursor-pointer"
+            className="text-xs text-primary hover:underline cursor-pointer"
           >
-            {isLogin ? "Don't have an account? Register client profile" : "Already registered? Sign in here"}
+            {isLogin ? "Don't have an authorized profile? Register here" : "Already registered? Sign in here"}
           </button>
         </div>
 
-        {/* Instant Access Options in Automark Pill Style */}
-        <div className="pt-4 border-t border-border space-y-3">
-          <div className="text-center font-mono text-[10px] uppercase tracking-wider text-text-dark">
-            One-Click Fast Testing Access
+        {/* One-Click Fast Access for Demo Testing */}
+        <div className="pt-4 border-t border-border space-y-2.5">
+          <div className="text-center text-[11px] text-text-dark font-medium">
+            Demo Portal Access (Select a persona to test)
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
-              onClick={() => handleQuickLogin('admin@epoteck.com')}
-              className="py-2 px-3 rounded-full bg-emerald-500/10 border border-emerald-500/30 hover:border-emerald-500/60 text-emerald-400 font-mono text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer"
+              onClick={() => handleQuickLogin('admin@epotech.com')}
+              className="py-2 px-3 rounded-full bg-body border border-border hover:border-primary/50 text-text-light text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer"
             >
-              <span>⚡ Admin SecOps</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+              <span>Admin Persona</span>
             </button>
             <button
               type="button"
-              onClick={() => handleQuickLogin('client@epoteck.io')}
-              className="py-2 px-3 rounded-full bg-primary/10 border border-primary/30 hover:border-primary/60 text-primary font-mono text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer"
+              onClick={() => handleQuickLogin('client@epotech.io')}
+              className="py-2 px-3 rounded-full bg-body border border-border hover:border-primary/50 text-text-light text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer"
             >
-              <span>🛡️ Client Portal</span>
+              <Lock className="w-3.5 h-3.5 text-text-dark" />
+              <span>Client Persona</span>
             </button>
           </div>
         </div>

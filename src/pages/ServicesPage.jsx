@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Terminal, CheckCircle2, ArrowRight, ShieldCheck, Cpu, Cloud, Lock } from 'lucide-react';
+import { Terminal, CheckCircle2, ArrowRight, ShieldCheck, Cpu, Cloud, Code2 } from 'lucide-react';
 
 export default function ServicesPage({ onRequestModalOpen }) {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -8,61 +8,61 @@ export default function ServicesPage({ onRequestModalOpen }) {
     {
       id: 'web-pentest',
       category: 'security',
-      title: 'Web Application Penetration Testing',
-      priceTag: 'Custom Scope',
-      badge: 'CREST Certified',
+      title: 'Web Application & API Penetration Testing',
+      priceTag: 'Scoped 2–3 Week Sprints',
+      badge: 'Whitebox & Graybox',
       icon: ShieldCheck,
-      description: 'In-depth security analysis targeting web applications, single-page apps (SPAs), and serverless backends to uncover OWASP Top 10 vulnerabilities.',
+      description: 'Thorough manual penetration testing of single-page applications, server-rendered platforms, and REST/GraphQL APIs. We dissect authentication flows and business logic to uncover high-impact flaws before production release.',
       deliverables: [
-        'Authenticated & Unauthenticated Vulnerability Assessment',
-        'Business Logic & Access Control Bypass Verification',
-        'Detailed Proof-of-Concept (PoC) Exploitation Scenarios',
-        'Executive Summary & Remediation Code Guidelines'
+        'Multi-step authorization testing (BOLA / IDOR, tenant boundary bypasses)',
+        'Token and session security review (JWT signing flaws, CSRF, OAuth2 flows)',
+        'Verified proof-of-concept scripts and step-by-step reproduction steps',
+        'Engineering-level remediation report with exact code diffs & verification re-testing'
       ]
     },
     {
       id: 'custom-web',
       category: 'webdev',
-      title: 'Full-Stack Web Development & Architecture',
-      priceTag: 'Project-Based',
-      badge: 'FastAPI / React / Vite',
+      title: 'High-Assurance Full-Stack Platform Development',
+      priceTag: 'Milestone-Based Engineering',
+      badge: 'React / FastAPI / Postgres',
       icon: Cpu,
-      description: 'End-to-end custom web engineering using modern JavaScript frontend frameworks paired with Python FastAPI backends and Supabase Postgres.',
+      description: 'End-to-end web engineering for performance-critical and security-sensitive web applications. Built with modern React/TypeScript frontends, Python FastAPI microservices, and Supabase PostgreSQL with strict Row Level Security.',
       deliverables: [
-        'Responsive, Glassmorphism UI with Modern Micro-Animations',
-        'Stateless Serverless Deployment for Vercel Platform',
-        'Supabase Auth & Database Integration with RLS Security',
-        'Complete REST API Documentation & OpenAPI Specs'
+        'High-fidelity, responsive user interface with accessible micro-animations',
+        'High-throughput asynchronous backend APIs with automated schema validation',
+        'Granular tenant isolation via Supabase PostgreSQL Row Level Security (RLS)',
+        'Automated testing suites, CSP header configurations, and CI/CD deployment'
       ]
     },
     {
       id: 'cloud-audit',
       category: 'security',
-      title: 'Cloud Infrastructure & API Security Audit',
-      priceTag: 'Enterprise Tier',
+      title: 'Cloud Architecture & IAM Security Audit',
+      priceTag: '1–2 Week Review',
       badge: 'AWS / GCP / Vercel',
       icon: Cloud,
-      description: 'Comprehensive review of cloud security posture, API gateway parameters, authentication tokens, and infrastructure configuration.',
+      description: 'Rigorous security evaluation of cloud infrastructure, IAM permissions, serverless function configurations, and public resource exposure. Designed to prevent cloud data leaks and supply chain compromises.',
       deliverables: [
-        'IAM Least-Privilege & Misconfiguration Audit',
-        'API Rate Limiting, CORS & Token Verification',
-        'TLS/SSL Certificate & Encryption Cipher Review',
-        'Automated Posture Check & Telemetry Setup'
+        'Least-privilege IAM policy auditing and role privilege escalation reviews',
+        'Cloud storage, database, and serverless endpoint access rule verification',
+        'TLS/SSL cipher suites, CORS policies, and rate-limiting infrastructure review',
+        'Hardening checklist prioritized by exploitability and business risk'
       ]
     },
     {
       id: 'sec-hardening',
       category: 'webdev',
-      title: 'Web Application Security Hardening',
-      priceTag: 'Add-On Service',
-      badge: 'Defense-in-Depth',
-      icon: Lock,
-      description: 'Retrofit existing web applications with enterprise-grade defense layers, Content Security Policies (CSP), and secure headers.',
+      title: 'Source Code Review & DevSecOps Hardening',
+      priceTag: 'Targeted Advisory',
+      badge: 'Code-Level Audit',
+      icon: Code2,
+      description: 'Line-by-line manual source code review focused on identifying injection vectors, insecure direct object references, cryptographic missteps, and third-party dependency vulnerabilities.',
       deliverables: [
-        'Strict Content-Security-Policy (CSP) Implementation',
-        'Sanitization & XSS/CSRF Prevention Middleware',
-        'Security Headers Configuration (HSTS, X-Frame-Options)',
-        'Post-Hardening Verification Scan'
+        'Manual static and dynamic source code vulnerability assessment',
+        'Third-party dependency and open-source supply-chain security audit',
+        'Secure CI/CD pipeline gating and automated secret scanning setup',
+        'Developer enablement briefing with root-cause analysis of findings'
       ]
     }
   ];
@@ -76,15 +76,14 @@ export default function ServicesPage({ onRequestModalOpen }) {
       
       {/* Header Banner */}
       <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-mono">
-          <Terminal className="w-3.5 h-3.5 text-primary" />
-          <span>OFFERING CATALOG & ENGAGEMENT MATRIX</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-light border border-border text-text-light text-xs font-medium">
+          <span>Consultancy & Engineering Offerings</span>
         </div>
         <h1 className="hasHighlight text-4xl sm:text-5xl lg:text-6xl font-bold font-secondary text-white">
-          Cybersecurity & <strong>Web Engineering</strong>
+          Specialized <strong>Security Assessments</strong> & Web Engineering
         </h1>
         <p className="text-base text-text leading-relaxed">
-          Select an offering below to engage Epotech's specialized team of security auditors and senior full-stack developers.
+          Engage our team for scoped manual penetration tests, cloud security hardening, or custom full-stack web platforms built to withstand modern threats.
         </p>
       </div>
 
@@ -93,24 +92,24 @@ export default function ServicesPage({ onRequestModalOpen }) {
         <div className="p-1 rounded-full bg-light border border-border inline-flex space-x-1 shadow-lg">
           <button
             onClick={() => setActiveCategory('all')}
-            className={`px-6 py-2 rounded-full text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeCategory === 'all' ? 'bg-primary text-white font-bold shadow-[0_0_15px_rgba(147,122,255,0.4)]' : 'text-text-dark hover:text-white'
+            className={`px-6 py-2 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
+              activeCategory === 'all' ? 'bg-primary text-white font-semibold shadow-[0_0_15px_rgba(147,122,255,0.4)]' : 'text-text-dark hover:text-white'
             }`}
           >
             All Offerings
           </button>
           <button
             onClick={() => setActiveCategory('security')}
-            className={`px-6 py-2 rounded-full text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeCategory === 'security' ? 'bg-primary text-white font-bold shadow-[0_0_15px_rgba(147,122,255,0.4)]' : 'text-text-dark hover:text-white'
+            className={`px-6 py-2 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
+              activeCategory === 'security' ? 'bg-primary text-white font-semibold shadow-[0_0_15px_rgba(147,122,255,0.4)]' : 'text-text-dark hover:text-white'
             }`}
           >
-            Security & Pentesting
+            Security Assessments
           </button>
           <button
             onClick={() => setActiveCategory('webdev')}
-            className={`px-6 py-2 rounded-full text-xs font-mono transition-all duration-200 cursor-pointer ${
-              activeCategory === 'webdev' ? 'bg-primary text-white font-bold shadow-[0_0_15px_rgba(147,122,255,0.4)]' : 'text-text-dark hover:text-white'
+            className={`px-6 py-2 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
+              activeCategory === 'webdev' ? 'bg-primary text-white font-semibold shadow-[0_0_15px_rgba(147,122,255,0.4)]' : 'text-text-dark hover:text-white'
             }`}
           >
             Web Engineering
@@ -130,10 +129,10 @@ export default function ServicesPage({ onRequestModalOpen }) {
                     <SrvIcon className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary font-mono text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold">
                       {srv.badge}
                     </span>
-                    <span className="text-xs font-mono text-text-dark">{srv.priceTag}</span>
+                    <span className="text-xs text-text-dark">{srv.priceTag}</span>
                   </div>
                 </div>
 
@@ -141,7 +140,7 @@ export default function ServicesPage({ onRequestModalOpen }) {
                 <p className="text-sm text-text leading-relaxed mb-6">{srv.description}</p>
 
                 <div className="space-y-3 mb-8">
-                  <div className="text-xs font-mono text-primary uppercase font-semibold">Key Deliverables:</div>
+                  <div className="text-xs text-primary font-semibold uppercase tracking-wider">Key Deliverables</div>
                   {srv.deliverables.map((del, i) => (
                     <div key={`${srv.id}-del-${i}`} className="flex items-start space-x-2.5 text-xs text-text-light font-sans">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
@@ -153,9 +152,9 @@ export default function ServicesPage({ onRequestModalOpen }) {
 
               <button
                 onClick={onRequestModalOpen}
-                className="w-full btn btn-primary text-xs justify-center font-mono"
+                className="w-full btn btn-primary text-xs justify-center"
               >
-                <span>Request Service Scope</span>
+                <span>Request Assessment Scope</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -163,29 +162,34 @@ export default function ServicesPage({ onRequestModalOpen }) {
         })}
       </div>
 
-      {/* Methodology Section in Automark Section-Box Style */}
+      {/* Engagement Process (Real substance, not sci-fi vibe coding) */}
       <div className="section-box p-8 sm:p-12">
-        <h3 className="text-2xl font-bold font-secondary text-white mb-8 text-center">Epotech Execution Methodology</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center font-mono text-xs">
-          <div className="p-6 rounded-2xl bg-body/80 border border-border">
-            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary font-bold flex items-center justify-center mx-auto mb-4 border border-primary/30">1</div>
-            <div className="font-bold text-white text-sm mb-1.5">Scope & Auth</div>
-            <div className="text-text-dark text-[11px] leading-relaxed">Define domain targets & authorize testing parameters</div>
+        <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+          <div className="text-xs text-primary font-semibold uppercase tracking-wider">Engagement Lifecycle</div>
+          <h3 className="text-2xl sm:text-3xl font-bold font-secondary text-white">How We Conduct Engagements</h3>
+          <p className="text-sm text-text-dark">A clear, collaborative four-step process built to minimize operational disruption while maximizing security coverage.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+          <div className="p-6 rounded-2xl bg-body/80 border border-border space-y-2">
+            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-xs flex items-center justify-center mb-3 border border-primary/30">01</div>
+            <div className="font-bold text-white text-sm">Threat Modeling & Scope</div>
+            <div className="text-text-dark text-xs leading-relaxed">We define target URLs, APIs, cloud boundaries, and rules of engagement with your technical leads.</div>
           </div>
-          <div className="p-6 rounded-2xl bg-body/80 border border-border">
-            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary font-bold flex items-center justify-center mx-auto mb-4 border border-primary/30">2</div>
-            <div className="font-bold text-white text-sm mb-1.5">Deep Analysis</div>
-            <div className="text-text-dark text-[11px] leading-relaxed">Automated telemetry & senior engineer manual audits</div>
+          <div className="p-6 rounded-2xl bg-body/80 border border-border space-y-2">
+            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-xs flex items-center justify-center mb-3 border border-primary/30">02</div>
+            <div className="font-bold text-white text-sm">Manual Exploitation</div>
+            <div className="text-text-dark text-xs leading-relaxed">Senior security engineers manually probe business logic, authentication, and access controls for zero-day flaws.</div>
           </div>
-          <div className="p-6 rounded-2xl bg-body/80 border border-border">
-            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary font-bold flex items-center justify-center mx-auto mb-4 border border-primary/30">3</div>
-            <div className="font-bold text-white text-sm mb-1.5">Report & Diffs</div>
-            <div className="text-text-dark text-[11px] leading-relaxed">Parsed dashboard report & remediation code recommendations</div>
+          <div className="p-6 rounded-2xl bg-body/80 border border-border space-y-2">
+            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-xs flex items-center justify-center mb-3 border border-primary/30">03</div>
+            <div className="font-bold text-white text-sm">Engineering Briefing</div>
+            <div className="text-text-dark text-xs leading-relaxed">We deliver findings with reproducible PoCs, CVSS ratings, and pull-request-ready remediation diffs.</div>
           </div>
-          <div className="p-6 rounded-2xl bg-body/80 border border-border">
-            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary font-bold flex items-center justify-center mx-auto mb-4 border border-primary/30">4</div>
-            <div className="font-bold text-white text-sm mb-1.5">Re-Validation</div>
-            <div className="text-text-dark text-[11px] leading-relaxed">Final verification scan to certify system security</div>
+          <div className="p-6 rounded-2xl bg-body/80 border border-border space-y-2">
+            <div className="w-8 h-8 rounded-full bg-primary/15 text-primary font-bold text-xs flex items-center justify-center mb-3 border border-primary/30">04</div>
+            <div className="font-bold text-white text-sm">Verification Re-Testing</div>
+            <div className="text-text-dark text-xs leading-relaxed">After your team merges fixes, we conduct validation testing to certify that vulnerabilities are closed.</div>
           </div>
         </div>
       </div>

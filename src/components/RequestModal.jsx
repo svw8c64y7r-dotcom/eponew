@@ -85,34 +85,34 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
             <Shield className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-xl font-bold font-secondary tracking-tight">Submit Service Request</h3>
-            <p className="text-xs text-text-dark font-mono">Epotech Engineering & Pentest Dispatch</p>
+            <h3 className="text-xl font-bold font-secondary tracking-tight">Scope an Engagement</h3>
+            <p className="text-xs text-text-dark">Provide target boundaries and technical specifications for your scope.</p>
           </div>
         </div>
 
         {successMsg ? (
           <div className="py-12 text-center space-y-3">
             <CheckCircle2 className="w-16 h-16 text-emerald-400 mx-auto animate-bounce" />
-            <h4 className="text-lg font-bold font-secondary text-white">Request Dispatched Successfully!</h4>
-            <p className="text-xs text-text-dark font-mono">Assigned to Epotech SecOps Lead. Track updates in your dashboard.</p>
+            <h4 className="text-lg font-bold font-secondary text-white">Engagement Request Submitted</h4>
+            <p className="text-xs text-text-dark">A security engineer will review your scope parameters and follow up.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-mono text-text-dark mb-1.5">PROJECT TITLE</label>
+              <label className="block text-xs font-medium text-text-dark mb-1.5">Project Name or Scope Summary</label>
               <input
                 type="text"
                 required
-                placeholder="e.g., Enterprise Web Portal Security Audit"
+                placeholder="e.g., Q4 API & Web Application Penetration Test"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-full bg-body border border-border text-white placeholder-text-dark/50 focus:border-primary focus:outline-none text-sm"
+                className="w-full px-4 py-2.5 rounded-full bg-body border border-border text-white placeholder-text-dark/40 focus:border-primary focus:outline-none text-sm"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-mono text-text-dark mb-1.5">SERVICE OFFERING</label>
+                <label className="block text-xs font-medium text-text-dark mb-1.5">Practice Offering</label>
                 <select
                   value={formData.service_type}
                   onChange={(e) => setFormData({ ...formData, service_type: e.target.value })}
@@ -120,45 +120,46 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
                 >
                   <option value="Penetration Testing">Penetration Testing</option>
                   <option value="Custom Web Development">Custom Web Development</option>
-                  <option value="Security Audit & Hardening">Security Audit & Hardening</option>
+                  <option value="Cloud Security Audit">Cloud Security Audit</option>
+                  <option value="Source Code Review">Source Code Review</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-text-dark mb-1.5">PRIORITY</label>
+                <label className="block text-xs font-medium text-text-dark mb-1.5">Timeline / Urgency</label>
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-full bg-body border border-border text-white text-sm focus:border-primary focus:outline-none cursor-pointer"
                 >
-                  <option value="critical">Critical (Immediate)</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="standard">Standard</option>
+                  <option value="critical">Immediate (&lt; 48 hours)</option>
+                  <option value="high">High Priority (Within 1 week)</option>
+                  <option value="medium">Standard (Within 2–3 weeks)</option>
+                  <option value="standard">Flexible Schedule</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-text-dark mb-1.5">TARGET HOST / DOMAIN</label>
+              <label className="block text-xs font-medium text-text-dark mb-1.5">Target Host, Domain, or Repository</label>
               <input
                 type="text"
                 required
-                placeholder="e.g., app.clientcompany.com"
+                placeholder="e.g., api.yourcompany.com or staging.yourcompany.internal"
                 value={formData.target}
                 onChange={(e) => setFormData({ ...formData, target: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-full bg-body border border-border text-white placeholder-text-dark/50 focus:border-primary focus:outline-none text-sm font-mono"
+                className="w-full px-4 py-2.5 rounded-full bg-body border border-border text-white placeholder-text-dark/40 focus:border-primary focus:outline-none text-sm font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono text-text-dark mb-1.5">TECHNICAL NOTES & SCOPE</label>
+              <label className="block text-xs font-medium text-text-dark mb-1.5">Scope Details & Architecture Notes</label>
               <textarea
                 rows={3}
-                placeholder="Provide staging URLs, API frameworks, or specific compliance targets..."
+                placeholder="Detail authentication requirements, known third-party dependencies, or staging credentials..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-4 py-3 rounded-2xl bg-body border border-border text-white placeholder-text-dark/50 focus:border-primary focus:outline-none text-sm"
+                className="w-full px-4 py-3 rounded-2xl bg-body border border-border text-white placeholder-text-dark/40 focus:border-primary focus:outline-none text-sm"
               />
             </div>
 
@@ -169,11 +170,11 @@ export default function RequestModal({ isOpen, onClose, onRequestCreated }) {
                 className="w-full btn btn-primary text-sm py-3 justify-center"
               >
                 {submitting ? (
-                  <span>Encrypting & Dispatching...</span>
+                  <span>Submitting Scope...</span>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Submit Service Engagement</span>
+                    <span>Submit Scope for Engineering Review</span>
                   </>
                 )}
               </button>

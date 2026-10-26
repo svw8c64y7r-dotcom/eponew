@@ -48,41 +48,36 @@ export default function Navbar({ user, onLogout }) {
                     isActive 
                       ? 'bg-primary/15 text-white border border-primary/30 shadow-[0_0_12px_rgba(147,122,255,0.2)] font-semibold' 
                       : link.isSecOps
-                      ? 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                      ? 'text-text-light hover:text-white hover:bg-white/5'
                       : 'text-text-dark hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-primary' : link.isSecOps ? 'text-emerald-400' : 'text-text-dark'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-primary' : 'text-text-dark'}`} />
                   <span>{link.label}</span>
-                  {link.isSecOps && (
-                    <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded-full border border-emerald-500/30">
-                      OPS
-                    </span>
-                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* User Auth & System Status */}
+          {/* User Auth & Operational Status */}
           <div className="hidden md:flex items-center space-x-3">
-            <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-light border border-border text-emerald-400 text-xs font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>ONLINE</span>
+            <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-light border border-border text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span className="text-[11px] text-text-dark">Systems Active</span>
             </div>
 
             {user ? (
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2.5">
                 <Link 
                   to="/dashboard"
-                  className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-light border border-border text-xs text-text-light font-mono hover:border-primary/40 transition"
+                  className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-light border border-border text-xs text-text-light hover:border-primary/40 transition"
                 >
                   <UserCheck className="w-4 h-4 text-primary" />
-                  <span className="truncate max-w-[120px]">{user.email || 'Client Portal'}</span>
+                  <span className="truncate max-w-[130px] font-medium">{user.email || 'Client Portal'}</span>
                 </Link>
                 <button
                   onClick={onLogout}
-                  className="px-3.5 py-1.5 rounded-full border border-border text-xs text-text-dark hover:text-white hover:bg-white/5 transition font-mono"
+                  className="px-3.5 py-1.5 rounded-full border border-border text-xs text-text-dark hover:text-white hover:bg-white/5 transition"
                 >
                   Sign Out
                 </button>
