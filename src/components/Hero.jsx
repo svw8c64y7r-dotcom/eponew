@@ -5,7 +5,7 @@ export default function Hero({ onExploreServices, onRequestAudit }) {
   return (
     <div className="relative pt-12 pb-20 md:pt-16 md:pb-28 overflow-hidden">
       {/* Automark Ambient Spore Radial Glow Background */}
-      <div 
+      <div
         className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 w-[800px] xl:w-[1200px] h-[600px] -z-10 pointer-events-none blur-3xl opacity-50"
         style={{
           background: 'radial-gradient(circle, var(--color-primary) 0%, rgba(147, 122, 255, 0.2) 25%, rgba(77, 54, 208, 0.06) 50%, transparent 75%)'
@@ -15,10 +15,10 @@ export default function Hero({ onExploreServices, onRequestAudit }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
+
           {/* Hero Left Content */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            
+
             {/* Professional Clean Eyebrow Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-light border border-border text-text-light text-xs font-medium shadow-sm">
               <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
@@ -26,13 +26,13 @@ export default function Hero({ onExploreServices, onRequestAudit }) {
             </div>
 
             {/* Powerful, authentic headline */}
-            <h1 className="hasHighlight text-4xl sm:text-5xl lg:text-6xl font-bold font-secondary text-white leading-[1.12]">
-              We find the critical vulnerabilities <strong>automated scanners miss</strong>.
+            <h1 className="text-5xl sm:text-6xl font-bold font-secondary text-white leading-[1.1]">
+              Elevate Your Security
             </h1>
 
             {/* Grounded, high-trust subheadline */}
-            <p className="text-base sm:text-lg text-text leading-relaxed max-w-2xl">
-              Epotech conducts rigorous manual penetration tests and architects resilient full-stack web platforms for engineering teams that cannot afford a breach.
+            <p className="mt-4 text-lg text-text-dark max-w-2xl">
+              Penetration testing, audits, and custom secure platforms for modern enterprises.
             </p>
 
             {/* Action Buttons */}
@@ -76,7 +76,7 @@ export default function Hero({ onExploreServices, onRequestAudit }) {
           {/* Hero Right Visual: Authentic Security Finding & Remediation Card */}
           <div className="lg:col-span-5">
             <div className="glass-panel-glow p-6 sm:p-7 rounded-3xl relative shadow-2xl space-y-5">
-              
+
               {/* Card Header with Target Metadata */}
               <div className="flex items-center justify-between pb-4 border-b border-border">
                 <div className="flex items-center space-x-2.5">
@@ -104,7 +104,7 @@ export default function Hero({ onExploreServices, onRequestAudit }) {
                     HIGH • CVSS 8.4
                   </span>
                 </div>
-                
+
                 <p className="text-xs text-text-dark leading-relaxed">
                   Endpoint <code className="text-text-light px-1 py-0.5 bg-light rounded text-[11px] font-mono">/v2/orgs/&#123;id&#125;/billing</code> failed to validate session tenant claims, permitting cross-organization data disclosure.
                 </p>
