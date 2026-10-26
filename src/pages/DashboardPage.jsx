@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Shield, Terminal, Plus, Server, Clock, RefreshCw, Activity, ArrowRight } from 'lucide-react';
-import { runSecurityAudit } from '../lib/apiClient';
-import { supabase } from '../lib/supabase';
+import { LayoutDashboard, Shield, Terminal, Plus, Server, Clock, RefreshCw, Activity, ArrowRight, Cpu } from 'lucide-react';
+import { runSecurityAudit, getServiceRequests } from '../lib/apiClient';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import AuditReportViewer from '../components/AuditReportViewer';
+import ComprehensiveScanner from '../components/ComprehensiveScanner';
 import { INITIAL_AUDIT_REPORTS } from '../lib/mockData';
 
 export default function DashboardPage({ user, onRequestModalOpen }) {
   const [activeTab, setActiveTab] = useState('overview'); // overview, requests, scanner
+  const [scannerSubTab, setScannerSubTab] = useState('multi'); // multi, posture
   const [requests, setRequests] = useState([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
 
@@ -30,19 +32,38 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
   }, [user]);
 
   const loadRequests = async () => {
-    if (!user || !user.id) return; // CRITICAL: Ensure we have a logged-in user
-
     setLoadingRequests(true);
     try {
-      // Direct Supabase query with Row Level filtering
-      const { data, error } = await supabase
-        .from('service_requests')
-        .select('*')
-        .eq('user_id', user.id) // ONLY fetch requests belonging to this client
-        .order('created_at', { ascending: false });
+      // 1. If Supabase is active, attempt direct user-filtered query
+      if (isSupabaseConfigured && user?.id) {
+        try {
+          const { data, error } = await supabase
+            .from('service_requests')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setRequests(data || []);
+          if (!error && Array.isArray(data) && data.length > 0) {
+            setRequests(data);
+            setLoadingRequests(false);
+            return;
+          }
+        } catch (sbErr) {
+          console.warn('[Epotech Dashboard] Supabase direct query skipped:', sbErr);
+        }
+      }
+
+      // 2. Fetch unified requests via apiClient (FastAPI / local storage / mock)
+      const allRequests = await getServiceRequests();
+      const userEmail = (user?.email || '').toLowerCase();
+      
+      const userSpecific = (Array.isArray(allRequests) ? allRequests : []).filter(r => 
+        (r.user_id && r.user_id === user?.id) || 
+        (r.user_email && r.user_email.toLowerCase() === userEmail)
+      );
+
+      // If user has created requests, show theirs; otherwise show active platform requests
+      setRequests(userSpecific.length > 0 ? userSpecific : allRequests);
     } catch (err) {
       console.warn('[Epotech Dashboard] Error fetching service requests:', err);
     } finally {
@@ -307,47 +328,80 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
 
       {/* TAB 3: SCANNER & AUDIT REPORTS */}
       {activeTab === 'scanner' && (
-        <div className="space-y-8">
+        <div className="space-y-6">
 
-          <div className="glass-panel p-6 rounded-2xl border border-cyber-cyan/30 space-y-4">
-            <h3 className="text-lg font-bold text-white font-mono">Run Posture Scan</h3>
-            <form onSubmit={handleRunAudit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-mono text-cyber-muted mb-1">TARGET DOMAIN / HOSTNAME</label>
-                <input
-                  type="text"
-                  required
-                  value={targetHost}
-                  onChange={(e) => setTargetHost(e.target.value)}
-                  placeholder="e.g., api.company.com"
-                  className="w-full px-4 py-3 rounded-xl bg-cyber-bg border border-cyber-border text-white text-sm font-mono focus:border-cyber-cyan focus:outline-none"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2 text-xs font-mono text-cyber-muted">
-                <input
-                  type="checkbox"
-                  id="authConfirm"
-                  checked={authConfirmed}
-                  onChange={(e) => setAuthConfirmed(e.target.checked)}
-                  className="rounded border-cyber-border bg-cyber-bg text-cyber-cyan"
-                />
-                <label htmlFor="authConfirm">
-                  I confirm explicit authorization to perform posture diagnostics on target host.
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={scanning}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-bold text-xs font-mono flex items-center justify-center space-x-2"
-              >
-                {scanning ? <span>Executing Posture Diagnostics...</span> : <span>Execute Audit Scan</span>}
-              </button>
-            </form>
+          {/* Scanner Mode Switcher */}
+          <div className="flex border-b border-cyber-border space-x-3 font-mono text-xs pb-2">
+            <button
+              onClick={() => setScannerSubTab('multi')}
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition ${
+                scannerSubTab === 'multi'
+                  ? 'bg-cyber-cyan text-black font-bold'
+                  : 'bg-cyber-card text-cyber-muted hover:text-white border border-cyber-border'
+              }`}
+            >
+              <Cpu className="w-3.5 h-3.5" />
+              <span>Multi-Vector Recon Scanner</span>
+            </button>
+            <button
+              onClick={() => setScannerSubTab('posture')}
+              className={`px-3 py-1.5 rounded-lg flex items-center space-x-2 transition ${
+                scannerSubTab === 'posture'
+                  ? 'bg-cyber-cyan text-black font-bold'
+                  : 'bg-cyber-card text-cyber-muted hover:text-white border border-cyber-border'
+              }`}
+            >
+              <Shield className="w-3.5 h-3.5" />
+              <span>Security Posture Report Viewer</span>
+            </button>
           </div>
 
-          {currentReport && <AuditReportViewer report={currentReport} />}
+          {scannerSubTab === 'multi' ? (
+            <ComprehensiveScanner />
+          ) : (
+            <div className="space-y-8">
+              <div className="glass-panel p-6 rounded-2xl border border-cyber-cyan/30 space-y-4">
+                <h3 className="text-lg font-bold text-white font-mono">Run Posture Scan</h3>
+                <form onSubmit={handleRunAudit} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-mono text-cyber-muted mb-1">TARGET DOMAIN / HOSTNAME</label>
+                    <input
+                      type="text"
+                      required
+                      value={targetHost}
+                      onChange={(e) => setTargetHost(e.target.value)}
+                      placeholder="e.g., api.company.com"
+                      className="w-full px-4 py-3 rounded-xl bg-cyber-bg border border-cyber-border text-white text-sm font-mono focus:border-cyber-cyan focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2 text-xs font-mono text-cyber-muted">
+                    <input
+                      type="checkbox"
+                      id="authConfirm"
+                      checked={authConfirmed}
+                      onChange={(e) => setAuthConfirmed(e.target.checked)}
+                      className="rounded border-cyber-border bg-cyber-bg text-cyber-cyan"
+                    />
+                    <label htmlFor="authConfirm">
+                      I confirm explicit authorization to perform posture diagnostics on target host.
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={scanning}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-bold text-xs font-mono flex items-center justify-center space-x-2 shadow-cyber-cyan hover:opacity-95 transition"
+                  >
+                    {scanning ? <span>Executing Posture Diagnostics...</span> : <span>Execute Audit Scan</span>}
+                  </button>
+                </form>
+              </div>
+
+              {currentReport && <AuditReportViewer report={currentReport} />}
+            </div>
+          )}
+
         </div>
       )}
 

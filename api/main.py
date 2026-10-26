@@ -74,7 +74,9 @@ MEMORY_SERVICE_REQUESTS = [
         "priority": "high",
         "created_at": "2026-09-12T10:30:00Z",
         "assigned_lead": "Alex Rivera (Senior SecOps)",
-        "notes": "Full OWASP Top 10 evaluation, authenticated testing requested."
+        "notes": "Full OWASP Top 10 evaluation, authenticated testing requested.",
+        "user_id": "user_demo_client",
+        "user_email": "client@epoteck.io"
     },
     {
         "id": "req_8842",
@@ -85,7 +87,9 @@ MEMORY_SERVICE_REQUESTS = [
         "priority": "medium",
         "created_at": "2026-09-08T14:15:00Z",
         "assigned_lead": "Elena Rostova (Lead Full-Stack)",
-        "notes": "Next.js 14 architecture with strict Content Security Policy (CSP)."
+        "notes": "Next.js 14 architecture with strict Content Security Policy (CSP).",
+        "user_id": "user_demo_admin",
+        "user_email": "admin@epoteck.com"
     }
 ]
 
@@ -99,6 +103,14 @@ class ServiceRequestCreate(BaseModel):
     status: Optional[str] = Field(default="in_progress")
     assigned_lead: Optional[str] = Field(default="Epotech SecOps Team")
     notes: Optional[str] = Field(default="")
+    user_id: Optional[str] = Field(default=None)
+    user_email: Optional[str] = Field(default=None)
+
+class ServiceRequestUpdate(BaseModel):
+    status: Optional[str] = None
+    priority: Optional[str] = None
+    assigned_lead: Optional[str] = None
+    notes: Optional[str] = None
 
 class SecurityAuditRequest(BaseModel):
     target: str = Field(..., example="api.epotech.io")
@@ -137,6 +149,7 @@ async def scan_website(target: str):
     target_url = target if target.startswith(("http://", "https://")) else f"https://{target}"
     parsed = urlparse(target_url)
     domain = parsed.netloc or parsed.path
+    clean_host = domain.split(":")[0].strip()
 
     web_data = {
         "url": target_url,
@@ -164,8 +177,8 @@ async def scan_website(target: str):
 
     try:
         ctx = ssl.create_default_context()
-        with socket.create_connection((domain, 443), timeout=2.5) as sock:
-            with ctx.wrap_socket(sock, server_hostname=domain) as ssock:
+        with socket.create_connection((clean_host, 443), timeout=2.5) as sock:
+            with ctx.wrap_socket(sock, server_hostname=clean_host) as ssock:
                 cert = ssock.getpeercert()
                 web_data["ssl_valid"] = True
                 web_data["ssl_issuer"] = dict(x[0] for x in cert.get('issuer', []))
@@ -211,7 +224,9 @@ def create_service_request(req: ServiceRequestCreate):
         "status": req.status or "in_progress",
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "assigned_lead": req.assigned_lead or "Epotech SecOps Team",
-        "notes": req.notes or ""
+        "notes": req.notes or "",
+        "user_id": req.user_id,
+        "user_email": req.user_email
     }
 
     if supabase_client:
@@ -224,6 +239,41 @@ def create_service_request(req: ServiceRequestCreate):
 
     MEMORY_SERVICE_REQUESTS.insert(0, new_record)
     return new_record
+
+@app.patch("/api/requests/{request_id}")
+def update_service_request(request_id: str, updates: ServiceRequestUpdate):
+    """Update status, priority, assigned lead, or notes for an existing request"""
+    update_dict = {k: v for k, v in updates.dict().items() if v is not None}
+    if not update_dict:
+        raise HTTPException(status_code=400, detail="No fields provided for update")
+
+    if supabase_client:
+        try:
+            res = supabase_client.table("service_requests").update(update_dict).eq("id", request_id).execute()
+            if res.data:
+                return res.data[0]
+        except Exception as err:
+            print(f"Supabase update error: {err}")
+
+    for idx, item in enumerate(MEMORY_SERVICE_REQUESTS):
+        if item.get("id") == request_id:
+            MEMORY_SERVICE_REQUESTS[idx].update(update_dict)
+            return MEMORY_SERVICE_REQUESTS[idx]
+
+    raise HTTPException(status_code=404, detail="Request not found")
+
+@app.delete("/api/requests/{request_id}")
+def delete_service_request(request_id: str):
+    """Delete a service request by ID"""
+    if supabase_client:
+        try:
+            supabase_client.table("service_requests").delete().eq("id", request_id).execute()
+        except Exception as err:
+            print(f"Supabase delete error: {err}")
+
+    global MEMORY_SERVICE_REQUESTS
+    MEMORY_SERVICE_REQUESTS = [r for r in MEMORY_SERVICE_REQUESTS if r.get("id") != request_id]
+    return {"status": "success", "deleted_id": request_id}
 
 @app.get("/api/scan/comprehensive")
 async def comprehensive_scan(target: str = Query(..., description="Domain or IP address to scan")):
