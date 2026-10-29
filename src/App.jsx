@@ -9,24 +9,19 @@ import DashboardPage from './pages/DashboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RequestModal from './components/RequestModal';
 
-// 1. Define your authorized admin emails here
 const ADMIN_EMAILS = [
   'admin@epoteck.com',
-  'sriragavsurya@gmail.com' // Replace with your actual admin email addresses
+  'sriragavsurya@gmail.com'
 ];
 
-// 2. Updated Route Guard with Role Checking
 const ProtectedRoute = ({ user, children, requireAdmin = false }) => {
   if (!user) {
-    // Not logged in -> Redirect to auth portal
     return <Navigate to="/auth" replace />;
   }
 
-  // If this route requires admin access, verify the user's email
   if (requireAdmin) {
-    const userEmail = user.email?.toLowerCase(); // Ensure case-insensitive matching
+    const userEmail = user.email?.toLowerCase();
     if (!userEmail || !ADMIN_EMAILS.includes(userEmail)) {
-      // Logged in, but NOT an admin -> Redirect to client dashboard
       return <Navigate to="/dashboard" replace />;
     }
   }
@@ -47,7 +42,6 @@ export default function App() {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
   const location = useLocation();
 
-  // Scroll to top on route navigation
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
@@ -62,7 +56,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-cyber-bg text-cyber-text selection:bg-cyber-cyan selection:text-black">
+    <div className="min-h-screen flex flex-col bg-body text-text font-primary selection:bg-primary selection:text-white">
       <Navbar user={user} onLogout={handleLogout} />
 
       <main className="flex-1">
@@ -75,7 +69,6 @@ export default function App() {
             element={user ? <Navigate to="/dashboard" replace /> : <AuthPage onAuthSuccess={(userData) => setUser(userData)} />}
           />
 
-          {/* Client Portal: Only requires login */}
           <Route
             path="/dashboard"
             element={
@@ -85,7 +78,6 @@ export default function App() {
             }
           />
 
-          {/* Command Center: Requires login AND Admin Email */}
           <Route
             path="/admin"
             element={
