@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { LayoutDashboard, Shield, Terminal, Plus, Server, Clock, RefreshCw, Activity, ArrowRight, Cpu } from 'lucide-react';
 import { runSecurityAudit, getServiceRequests } from '../lib/apiClient';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { getUserRole } from '../lib/auth';
 import AuditReportViewer from '../components/AuditReportViewer';
 import ComprehensiveScanner from '../components/ComprehensiveScanner';
 import { INITIAL_AUDIT_REPORTS } from '../lib/mockData';
@@ -129,15 +128,13 @@ export default function DashboardPage({ user, onRequestModalOpen }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {getUserRole(user) === 'admin' && (
-            <Link
-              to="/admin"
-              className="px-3.5 py-2 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan/50 text-cyber-cyan font-mono text-xs flex items-center space-x-1.5 transition"
-            >
-              <span>Command Center</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          )}
+          <Link
+            to="/admin"
+            className="px-3.5 py-2 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan/50 text-cyber-cyan font-mono text-xs flex items-center space-x-1.5 transition"
+          >
+            <span>Command Center</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
           <button
             onClick={onRequestModalOpen}
             className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-semibold text-xs font-mono flex items-center space-x-2 shadow-cyber-cyan hover:opacity-95 transition"
