@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import { getUserRole } from './lib/auth';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicesPage';
@@ -8,27 +9,30 @@ import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import RequestModal from './components/RequestModal';
+import ContactPage from './pages/ContactPage';
+import * as Sentry from '@sentry/react';
 
 // 1. Define your authorized admin emails here
-const ADMIN_EMAILS = [
-  'admin@epoteck.com',
-  'sriragavsurya@gmail.com' // Replace with your actual admin email addresses
-];
-
-// 2. Updated Route Guard with Role Checking
+// Updated Route Guard with Role Checking
 const ProtectedRoute = ({ user, children, requireAdmin = false }) => {
   if (!user) {
     // Not logged in -> Redirect to auth portal
     return <Navigate to="/auth" replace />;
   }
 
-  // If this route requires admin access, verify the user's email
-  if (requireAdmin) {
-    const userEmail = user.email?.toLowerCase(); // Ensure case-insensitive matching
-    if (!userEmail || !ADMIN_EMAILS.includes(userEmail)) {
-      // Logged in, but NOT an admin -> Redirect to client dashboard
-      return <Navigate to="/dashboard" replace />;
-    }
+  const role = getUserRole(user);
+
+  // If this route requires admin access, verify the user's role
+  if (requireAdmin && role !== 'admin') {
+    // Log unauthorized admin access attempt — do not expose route details to the user.
+    Sentry.captureEvent({
+      message: 'Unauthorized admin route access attempt',
+      level: 'warning',
+      tags: { component: 'ProtectedRoute', route: '/admin' },
+      extra: { user_role: role }
+    });
+    // Logged in, but not admin -> Redirect to client dashboard
+    return <Navigate to="/dashboard" replace />;
   }
 
   return children;
@@ -95,6 +99,7 @@ export default function App() {
             }
           />
 
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Shield, Lock, LayoutDashboard, Terminal, Menu, X, ArrowRight, UserCheck, Cpu } from 'lucide-react';
+import { getUserRole } from '../lib/auth';
 
 export default function Navbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const isAdmin = getUserRole(user) === 'admin';
+
   const navLinks = [
     { path: '/', label: 'Home', icon: Shield },
-    { path: '/services', label: 'Services', icon: Terminal },
     { path: '/dashboard', label: 'Client Portal', icon: LayoutDashboard },
-    { path: '/admin', label: 'SecOps Center', icon: Cpu, isSecOps: true },
+    ...(isAdmin ? [{ path: '/admin', label: 'Command Center', icon: Cpu, isSecOps: true }] : [])
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full transition-all duration-300 bg-body/80 backdrop-blur-xl border-b border-border/80">
+    <header className="sticky top-0 z-50 w-full bg-body/60 backdrop-blur-xl border-b border-border/30 shadow-lg transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -36,7 +38,7 @@ export default function Navbar({ user, onLogout }) {
           </Link>
 
           {/* Desktop Navigation Links (Pill Capsule in Automark style) */}
-          <nav className="hidden md:flex items-center space-x-1 bg-light/90 border border-border backdrop-blur-xl px-3 py-1.5 rounded-full shadow-lg shadow-black/20">
+          <nav className="hidden md:flex items-center space-x-2 bg-light/80 border border-border backdrop-blur-lg px-4 py-2 rounded-full shadow-md">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = currentPath === link.path;

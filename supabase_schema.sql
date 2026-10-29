@@ -56,45 +56,87 @@ CREATE INDEX IF NOT EXISTS idx_security_audits_created_at
 ALTER TABLE public.service_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.security_audits ENABLE ROW LEVEL SECURITY;
 
--- 4. Create RLS Policies for service_requests (Anon & Authenticated access)
-CREATE POLICY "Allow select service_requests" 
-    ON public.service_requests 
-    FOR SELECT 
-    TO authenticated, anon 
-    USING (true);
+-- ========================================================
+-- 4. SECURE RLS POLICIES — service_requests
+--    REPLACES the previous permissive anon/public policies.
+--    Drop old policies first to avoid conflicts.
+-- ========================================================
+DROP POLICY IF EXISTS "Allow select service_requests" ON public.service_requests;
+DROP POLICY IF EXISTS "Allow insert service_requests" ON public.service_requests;
+DROP POLICY IF EXISTS "Allow update service_requests" ON public.service_requests;
+DROP POLICY IF EXISTS "Allow delete service_requests" ON public.service_requests;
 
-CREATE POLICY "Allow insert service_requests" 
-    ON public.service_requests 
-    FOR INSERT 
-    TO authenticated, anon 
-    WITH CHECK (true);
+-- Authenticated users see only their own requests
+CREATE POLICY "Users read own requests"
+    ON public.service_requests
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
 
-CREATE POLICY "Allow update service_requests" 
-    ON public.service_requests 
-    FOR UPDATE 
-    TO authenticated, anon 
-    USING (true)
-    WITH CHECK (true);
+-- Authenticated users can insert requests — but only with their own user_id
+CREATE POLICY "Users insert own requests"
+    ON public.service_requests
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
 
--- 5. Create RLS Policies for security_audits
-CREATE POLICY "Allow select security_audits" 
-    ON public.security_audits 
-    FOR SELECT 
-    TO authenticated, anon 
-    USING (true);
+-- Authenticated users can update only their own requests
+CREATE POLICY "Users update own requests"
+    ON public.service_requests
+    FOR UPDATE
+    TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Allow insert security_audits" 
-    ON public.security_audits 
-    FOR INSERT 
-    TO authenticated, anon 
-    WITH CHECK (true);
+-- Admins (role set server-side via app_metadata) can manage ALL requests
+CREATE POLICY "Admins manage all requests"
+    ON public.service_requests
+    FOR ALL
+    TO authenticated
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+    WITH CHECK ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
+-- ========================================================
+-- 5. SECURE RLS POLICIES — security_audits
+--    Replaces the previous permissive anon/public policies.
+-- ========================================================
+DROP POLICY IF EXISTS "Allow select security_audits" ON public.security_audits;
+DROP POLICY IF EXISTS "Allow insert security_audits" ON public.security_audits;
+DROP POLICY IF EXISTS "Allow update security_audits" ON public.security_audits;
+DROP POLICY IF EXISTS "Allow delete security_audits" ON public.security_audits;
+
+-- Users see only their own audit reports
+CREATE POLICY "Users read own audits"
+    ON public.security_audits
+    FOR SELECT
+    TO authenticated
+    USING (auth.uid() = user_id);
+
+-- Users can insert audits only linked to their own user_id
+CREATE POLICY "Users insert own audits"
+    ON public.security_audits
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+-- Admins can manage all audit records
+CREATE POLICY "Admins manage all audits"
+    ON public.security_audits
+    FOR ALL
+    TO authenticated
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+    WITH CHECK ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+-- ========================================================
+-- IMPORTANT: After applying these policies you MUST
+-- rotate the Supabase Anon Key via the Dashboard if it
+-- has ever been exposed (e.g., committed to a repository).
 -- ========================================================
 -- Environment Variables Reference (.env / Vercel):
 -- VITE_SUPABASE_URL=https://your-project.supabase.co
 -- VITE_SUPABASE_ANON_KEY=your-anon-key
 -- SUPABASE_URL=https://your-project.supabase.co
 -- SUPABASE_ANON_KEY=your-anon-key
+-- (NEVER commit real values — use Vercel Environment Variables)
 -- ========================================================
-
 
