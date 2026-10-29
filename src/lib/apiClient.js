@@ -1,7 +1,7 @@
 import { isSupabaseConfigured, supabase } from './supabase';
 import { INITIAL_SERVICE_REQUESTS, INITIAL_AUDIT_REPORTS } from './mockData';
 
-// Standardized payload generator ensuring all required schema fields
+// Standardized payload generator ensuring all 8 required schema fields
 export function standardizeServiceRequest(data = {}) {
   const generatedId = `req_${Date.now()}_${Math.floor(100 + Math.random() * 900)}`;
   const rawId = data.id && String(data.id).trim() ? String(data.id).trim() : generatedId;
@@ -14,9 +14,7 @@ export function standardizeServiceRequest(data = {}) {
     priority: (data.priority && String(data.priority).trim().toLowerCase()) || 'high',
     status: (data.status && String(data.status).trim().toLowerCase()) || 'in_progress',
     assigned_lead: (data.assigned_lead && String(data.assigned_lead).trim()) || 'Epotech SecOps Team',
-    notes: data.notes !== undefined && data.notes !== null ? String(data.notes).trim() : '',
-    user_id: data.user_id || null,
-    user_email: data.user_email || null
+    notes: data.notes !== undefined && data.notes !== null ? String(data.notes).trim() : ''
   };
 }
 
@@ -130,76 +128,6 @@ export async function createServiceRequest(requestData) {
   const updated = [fallbackRecord, ...(Array.isArray(current) ? current : [])];
   localStorage.setItem('epotech_requests', JSON.stringify(updated));
   return fallbackRecord;
-}
-
-// Update existing service request status/priority/lead/notes
-export async function updateServiceRequest(id, updates = {}) {
-  // 1. Try FastAPI backend API
-  try {
-    const res = await fetch(`/api/requests/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updates)
-    });
-    if (res.ok) {
-      const data = await res.json();
-      return data;
-    }
-  } catch (e) {
-    console.warn('[Epotech API] Backend PATCH /api/requests failed, falling back to direct update.');
-  }
-
-  // 2. Try direct Supabase
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from('service_requests')
-        .update(updates)
-        .eq('id', id)
-        .select();
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data[0];
-      }
-    } catch (dbErr) {
-      console.warn('[Epotech Supabase] Direct update failed:', dbErr);
-    }
-  }
-
-  // 3. Fallback to localStorage
-  const current = await getServiceRequests();
-  const updatedList = (Array.isArray(current) ? current : []).map(r => 
-    r.id === id ? { ...r, ...updates } : r
-  );
-  localStorage.setItem('epotech_requests', JSON.stringify(updatedList));
-  return updatedList.find(r => r.id === id) || { id, ...updates };
-}
-
-// Delete a service request by ID
-export async function deleteServiceRequest(id) {
-  // 1. Try FastAPI backend API
-  try {
-    const res = await fetch(`/api/requests/${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (e) {
-    console.warn('[Epotech API] Backend DELETE failed, falling back.');
-  }
-
-  // 2. Try direct Supabase
-  if (isSupabaseConfigured) {
-    try {
-      await supabase.from('service_requests').delete().eq('id', id);
-    } catch (dbErr) {
-      console.warn('[Epotech Supabase] Direct delete failed:', dbErr);
-    }
-  }
-
-  // 3. Fallback to localStorage
-  const current = await getServiceRequests();
-  const updatedList = (Array.isArray(current) ? current : []).filter(r => r.id !== id);
-  localStorage.setItem('epotech_requests', JSON.stringify(updatedList));
-  return { status: 'success', deleted_id: id };
 }
 
 // Trigger target security posture check & audit report parser safely

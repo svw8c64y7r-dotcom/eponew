@@ -1,145 +1,127 @@
 import React from 'react';
-import { Shield, ArrowRight, Lock, Terminal, CheckCircle2, ShieldAlert, Code2 } from 'lucide-react';
+import { Shield, ArrowRight, Lock, Terminal, Cpu, CheckCircle2, Zap } from 'lucide-react';
 
 export default function Hero({ onExploreServices, onRequestAudit }) {
   return (
-    <div className="relative pt-12 pb-20 md:pt-16 md:pb-28 overflow-hidden">
-      {/* Automark Ambient Spore Radial Glow Background */}
-      <div
-        className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/3 w-[800px] xl:w-[1200px] h-[600px] -z-10 pointer-events-none blur-3xl opacity-50"
-        style={{
-          background: 'radial-gradient(circle, var(--color-primary) 0%, rgba(147, 122, 255, 0.2) 25%, rgba(77, 54, 208, 0.06) 50%, transparent 75%)'
-        }}
-      />
-      <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none -z-20" />
+    <div className="relative pt-12 pb-24 md:pt-20 md:pb-32 overflow-hidden">
+      {/* Dynamic Cyber Grid & Radial Glow Background */}
+      <div className="absolute inset-0 cyber-grid opacity-30 pointer-events-none"></div>
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-cyber-cyan/10 blur-[120px] rounded-full pointer-events-none"></div>
+      <div className="absolute top-1/3 right-10 w-[300px] h-[300px] bg-cyber-purple/10 blur-[100px] rounded-full pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
           {/* Hero Left Content */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-
-            {/* Professional Clean Eyebrow Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-light border border-border text-text-light text-xs font-medium shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span>Independent Security Research & Web Systems</span>
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* Registered Security Company Badge */}
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-cyber-cyan/10 border border-cyber-cyan/30 text-cyber-cyan text-xs font-mono">
+              <Shield className="w-3.5 h-3.5 text-cyber-cyan glow-cyan-sm animate-pulse" />
+              <span>REGISTERED CYBERSECURITY & WEB ENGINEERING FIRM</span>
             </div>
 
-            {/* Powerful, authentic headline */}
-            <h1 className="text-5xl sm:text-6xl font-bold font-secondary text-white leading-[1.1]">
-              Elevate Your Security
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+              Zero-Trust <span className="text-gradient-cyan">Cybersecurity</span> & Enterprise <span className="text-gradient-blue">Web Engineering</span>.
             </h1>
 
-            {/* Grounded, high-trust subheadline */}
-            <p className="mt-4 text-lg text-text-dark max-w-2xl">
-              Penetration testing, audits, and custom secure platforms for modern enterprises.
+            <p className="text-base sm:text-lg text-cyber-muted leading-relaxed max-w-2xl">
+              Epotech delivers CREST-aligned penetration testing, cloud security hardening, and resilient full-stack web platforms. Protecting mission-critical infrastructure with military-grade precision.
             </p>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
               <button
                 onClick={onRequestAudit}
-                className="btn btn-primary"
+                className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-bold text-sm flex items-center justify-center space-x-2 shadow-cyber-cyan hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
               >
-                <Lock className="w-4 h-4" />
-                <span>Request a Security Assessment</span>
-                <ArrowRight className="w-4 h-4" />
+                <Lock className="w-4 h-4 text-black" />
+                <span>Launch Security Audit</span>
+                <ArrowRight className="w-4 h-4 text-black" />
               </button>
 
               <button
                 onClick={onExploreServices}
-                className="btn btn-outline"
+                className="px-6 py-3.5 rounded-xl glass-panel text-white font-medium text-sm flex items-center justify-center space-x-2 hover:border-cyber-cyan/40 hover:bg-white/5 transition"
               >
-                <Terminal className="w-4 h-4 text-primary" />
-                <span>View Audit Methodology</span>
+                <Terminal className="w-4 h-4 text-cyber-cyan" />
+                <span>Explore Capabilities</span>
               </button>
             </div>
 
-            {/* Concrete, authentic differentiators */}
-            <div className="pt-8 border-t border-border/80 grid grid-cols-3 gap-6">
+            {/* Stats Metrics */}
+            <div className="pt-8 border-t border-cyber-border/60 grid grid-cols-3 gap-6 font-mono">
               <div>
-                <div className="text-2xl sm:text-3xl font-bold font-secondary text-white tracking-tight">100%</div>
-                <div className="text-xs text-text-dark mt-1 font-medium">Manual Logic Testing</div>
+                <div className="text-2xl sm:text-3xl font-extrabold text-white">99.98%</div>
+                <div className="text-xs text-cyber-muted">Threat Mitigation</div>
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-bold font-secondary text-primary tracking-tight">Zero</div>
-                <div className="text-xs text-text-dark mt-1 font-medium">False Positive Guarantee</div>
+                <div className="text-2xl sm:text-3xl font-extrabold text-cyber-cyan">340+</div>
+                <div className="text-xs text-cyber-muted">Audits & Builds</div>
               </div>
               <div>
-                <div className="text-2xl sm:text-3xl font-bold font-secondary text-emerald-400 tracking-tight">&lt;48h</div>
-                <div className="text-xs text-text-dark mt-1 font-medium">Critical Triage SLA</div>
+                <div className="text-2xl sm:text-3xl font-extrabold text-cyber-emerald">&lt;10ms</div>
+                <div className="text-xs text-cyber-muted">Serverless Latency</div>
               </div>
             </div>
 
           </div>
 
-          {/* Hero Right Visual: Authentic Security Finding & Remediation Card */}
+          {/* Hero Right Visual Interactive Telemetry Widget */}
           <div className="lg:col-span-5">
-            <div className="glass-panel-glow p-6 sm:p-7 rounded-3xl relative shadow-2xl space-y-5">
-
-              {/* Card Header with Target Metadata */}
-              <div className="flex items-center justify-between pb-4 border-b border-border">
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-body border border-border flex items-center justify-center">
-                    <Shield className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-white">Live Engagement Sample</div>
-                    <div className="text-[11px] font-mono text-text-dark">api.enterprise-target.io</div>
-                  </div>
+            <div className="glass-panel-glow p-6 rounded-2xl relative shadow-cyber-card">
+              
+              {/* Top Terminal Bar */}
+              <div className="flex items-center justify-between pb-4 mb-4 border-b border-cyber-border/60 font-mono text-xs">
+                <div className="flex space-x-2">
+                  <div className="w-3 h-3 rounded-full bg-cyber-red/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-cyber-amber/80"></div>
+                  <div className="w-3 h-3 rounded-full bg-cyber-emerald/80"></div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-[10px] font-medium font-mono">
-                  VERIFIED FIX
-                </span>
+                <span className="text-cyber-muted">epotech-sec-telemetry ~ v2.4</span>
               </div>
 
-              {/* Realistic Vulnerability Finding Item */}
-              <div className="p-4 rounded-2xl bg-body/80 border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <ShieldAlert className="w-4 h-4 text-secondary" />
-                    <span className="text-xs font-bold text-white">Broken Object-Level Authorization</span>
+              {/* Security Telemetry Status */}
+              <div className="space-y-4 font-mono text-xs">
+                <div className="p-3 rounded-lg bg-cyber-bg/90 border border-cyber-cyan/30 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Zap className="w-4 h-4 text-cyber-cyan animate-pulse" />
+                    <div>
+                      <div className="text-white font-semibold">Active Threat Firewall</div>
+                      <div className="text-[10px] text-cyber-muted">0 Unresolved Anomalies</div>
+                    </div>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-secondary/15 text-secondary text-[10px] font-mono font-bold">
-                    HIGH • CVSS 8.4
+                  <span className="px-2 py-0.5 rounded bg-cyber-emerald/10 text-cyber-emerald border border-cyber-emerald/30 font-bold">
+                    ARMED
                   </span>
                 </div>
 
-                <p className="text-xs text-text-dark leading-relaxed">
-                  Endpoint <code className="text-text-light px-1 py-0.5 bg-light rounded text-[11px] font-mono">/v2/orgs/&#123;id&#125;/billing</code> failed to validate session tenant claims, permitting cross-organization data disclosure.
-                </p>
-
-                {/* Concrete Code-Level Remediation Diff */}
-                <div className="p-2.5 rounded-xl bg-dark/90 border border-border text-[11px] font-mono space-y-1">
-                  <div className="text-[10px] text-text-dark flex items-center gap-1">
-                    <Code2 className="w-3 h-3 text-primary" />
-                    <span>Engineered Patch Diff</span>
+                <div className="p-3 rounded-lg bg-cyber-bg/90 border border-cyber-border space-y-2">
+                  <div className="flex justify-between text-cyber-muted text-[11px]">
+                    <span>Automated Security Hardening</span>
+                    <span className="text-cyber-cyan">98.4% Passed</span>
                   </div>
-                  <div className="text-rose-400/90">- const tenant = await db.orgs.find(req.params.id);</div>
-                  <div className="text-emerald-400/90">+ const tenant = await db.orgs.findVerified(req.params.id, req.user.tenantId);</div>
-                </div>
-              </div>
-
-              {/* Engagement Status Tickers */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-2xl bg-light/70 border border-border">
-                  <div className="text-[11px] text-text-dark">Testing Vector</div>
-                  <div className="text-white font-medium mt-1">OWASP API Top 10</div>
-                </div>
-                <div className="p-3 rounded-2xl bg-light/70 border border-border">
-                  <div className="text-[11px] text-text-dark">Remediation Status</div>
-                  <div className="text-emerald-400 font-medium mt-1 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Retested & Closed</span>
+                  <div className="w-full h-2 rounded-full bg-cyber-border overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-cyber-cyan to-cyber-blue w-[98%] rounded-full"></div>
                   </div>
                 </div>
-              </div>
 
-              {/* Footer reassurance */}
-              <div className="pt-1 text-center">
-                <span className="text-[11px] text-text-dark">
-                  Every engagement delivers working proof-of-concepts & actionable code fixes.
-                </span>
+                <div className="grid grid-cols-2 gap-3 text-[11px]">
+                  <div className="p-2.5 rounded-lg bg-cyber-bg/60 border border-cyber-border">
+                    <div className="text-cyber-muted">Vercel API Gateway</div>
+                    <div className="text-cyber-emerald font-bold mt-0.5">STATISTICS NORMAL</div>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-cyber-bg/60 border border-cyber-border">
+                    <div className="text-cyber-muted">Supabase Storage</div>
+                    <div className="text-cyber-cyan font-bold mt-0.5">JWT SYNCED</div>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-center">
+                  <span className="text-[10px] text-cyber-muted">
+                    FastAPI Engine Active • ISO 27001 Certified Procedures
+                  </span>
+                </div>
               </div>
 
             </div>

@@ -62,7 +62,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-body text-text font-primary selection:bg-primary selection:text-white">
+    <div className="min-h-screen flex flex-col bg-cyber-bg text-cyber-text selection:bg-cyber-cyan selection:text-black">
       <Navbar user={user} onLogout={handleLogout} />
 
       <main className="flex-1">

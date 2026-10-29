@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { runSecurityAudit } from '../lib/api';
-import { createServiceRequest, getServiceRequests, updateServiceRequest, deleteServiceRequest } from '../lib/apiClient';
+import { createServiceRequest, getServiceRequests } from '../lib/apiClient';
 
 export default function AdminRequestsTable() {
     const [requests, setRequests] = useState([]);
@@ -127,30 +127,6 @@ export default function AdminRequestsTable() {
             alert(`Failed to create request: ${err.message || 'Operation failed'}`);
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const handleStatusChange = async (requestId, nextStatus) => {
-        try {
-            // Optimistic update
-            setRequests(prev => (Array.isArray(prev) ? prev : []).map(r => 
-                r.id === requestId ? { ...r, status: nextStatus } : r
-            ));
-            await updateServiceRequest(requestId, { status: nextStatus });
-        } catch (err) {
-            console.error('Status change failed:', err);
-            await fetchRequests();
-        }
-    };
-
-    const handleDeleteRequest = async (requestId) => {
-        if (!window.confirm(`Are you sure you want to delete engagement request ${requestId}?`)) return;
-        try {
-            setRequests(prev => (Array.isArray(prev) ? prev : []).filter(r => r.id !== requestId));
-            await deleteServiceRequest(requestId);
-        } catch (err) {
-            console.error('Delete request failed:', err);
-            await fetchRequests();
         }
     };
 
@@ -447,18 +423,7 @@ export default function AdminRequestsTable() {
                                                 {req.target || 'N/A'}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    {getStatusBadge(req.status)}
-                                                    <select
-                                                        value={req.status || 'in_progress'}
-                                                        onChange={(e) => handleStatusChange(req.id, e.target.value)}
-                                                        className="bg-zinc-900 border border-zinc-800 text-[10px] font-mono rounded px-1.5 py-0.5 text-zinc-400 hover:text-zinc-200 focus:outline-none focus:border-emerald-500 cursor-pointer"
-                                                    >
-                                                        <option value="in_progress">Active Audit</option>
-                                                        <option value="review">Awaiting Auth</option>
-                                                        <option value="completed">Secured</option>
-                                                    </select>
-                                                </div>
+                                                {getStatusBadge(req.status)}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 rounded-sm text-[10px] font-bold uppercase tracking-wider ${req.priority === 'critical'
@@ -471,22 +436,13 @@ export default function AdminRequestsTable() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => handleRunScan(req.target)}
-                                                        disabled={scanningTarget === req.target}
-                                                        className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 px-2.5 py-1 rounded transition-colors font-mono"
-                                                    >
-                                                        {scanningTarget === req.target ? 'Scanning...' : 'Run Scan'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteRequest(req.id)}
-                                                        title="Delete Request"
-                                                        className="text-xs bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 px-2 py-1 rounded transition-colors font-mono"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                </div>
+                                                <button
+                                                    onClick={() => handleRunScan(req.target)}
+                                                    disabled={scanningTarget === req.target}
+                                                    className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 px-3 py-1.5 rounded transition-colors font-mono"
+                                                >
+                                                    {scanningTarget === req.target ? 'Scanning...' : 'Run Diagnostic'}
+                                                </button>
                                             </td>
                                             <td className="px-6 py-4 text-xs text-zinc-500 font-mono">
                                                 {req.created_at ? new Date(req.created_at).toLocaleString('en-US', {

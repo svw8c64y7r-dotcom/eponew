@@ -2,20 +2,29 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Shield, Lock, LayoutDashboard, Terminal, Menu, X, ArrowRight, UserCheck, Cpu } from 'lucide-react';
 
+const ADMIN_EMAILS = [
+  'admin@epoteck.com',
+  'sriragavsurya@gmail.com'
+];
+
 export default function Navbar({ user, onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const isAdmin = Boolean(
+    user && user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())
+  );
+
   const navLinks = [
     { path: '/', label: 'Home', icon: Shield },
-    { path: '/services', label: 'Services', icon: Terminal },
-    { path: '/dashboard', label: 'Client Portal', icon: LayoutDashboard },
-    { path: '/admin', label: 'SecOps Center', icon: Cpu, isSecOps: true },
+    { path: '/services', label: 'Services & Security', icon: Terminal },
+    { path: '/dashboard', label: 'Client Dashboard', icon: LayoutDashboard },
+    ...(isAdmin ? [{ path: '/admin', label: 'Command Center', icon: Cpu, isSecOps: true }] : []),
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full transition-all duration-300 bg-body/80 backdrop-blur-xl border-b border-border/80">
+    <header className="sticky top-0 z-50 glass-panel border-b border-cyber-border/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
@@ -24,19 +33,19 @@ export default function Navbar({ user, onLogout }) {
             to="/"
             className="flex items-center space-x-3 cursor-pointer group"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-b from-primary to-primary-light p-[1px] shadow-[0_0_20px_rgba(147,122,255,0.35)] transition-transform group-hover:scale-105">
-              <div className="w-full h-full bg-body rounded-[15px] flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-cyan to-cyber-blue p-[1px] shadow-cyber-cyan transition-transform group-hover:scale-105">
+              <div className="w-full h-full bg-cyber-bg rounded-[11px] flex items-center justify-center">
+                <Shield className="w-5 h-5 text-cyber-cyan glow-cyan-sm" />
               </div>
             </div>
             <div>
-              <span className="text-xl font-bold tracking-wider font-secondary text-white">EPOTECH</span>
-              <span className="block text-[10px] tracking-widest text-primary uppercase font-medium">Cybersecurity & Web</span>
+              <span className="text-xl font-extrabold tracking-wider text-white">EPOTECH</span>
+              <span className="block text-[10px] font-mono tracking-widest text-cyber-cyan uppercase font-semibold">Cybersecurity & Web</span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links (Pill Capsule in Automark style) */}
-          <nav className="hidden md:flex items-center space-x-1 bg-light/90 border border-border backdrop-blur-xl px-3 py-1.5 rounded-full shadow-lg shadow-black/20">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-1 bg-cyber-bg/60 p-1.5 rounded-xl border border-cyber-border/40">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = currentPath === link.path;
@@ -44,40 +53,45 @@ export default function Navbar({ user, onLogout }) {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`flex items-center space-x-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive 
-                      ? 'bg-primary/15 text-white border border-primary/30 shadow-[0_0_12px_rgba(147,122,255,0.2)] font-semibold' 
+                      ? 'bg-cyber-card text-cyber-cyan border border-cyber-cyan/30 shadow-cyber-cyan/20 shadow-md font-semibold' 
                       : link.isSecOps
-                      ? 'text-text-light hover:text-white hover:bg-white/5'
-                      : 'text-text-dark hover:text-white hover:bg-white/5'
+                      ? 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                      : 'text-cyber-muted hover:text-white hover:bg-white/5'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-primary' : 'text-text-dark'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-cyber-cyan' : link.isSecOps ? 'text-emerald-400' : ''}`} />
                   <span>{link.label}</span>
+                  {link.isSecOps && (
+                    <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded border border-emerald-500/30">
+                      OPS
+                    </span>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* User Auth & Operational Status */}
+          {/* User Auth & System Status */}
           <div className="hidden md:flex items-center space-x-3">
-            <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-light border border-border text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span className="text-[11px] text-text-dark">Systems Active</span>
+            <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-cyber-emerald/10 border border-cyber-emerald/30 text-cyber-emerald text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-cyber-emerald animate-pulse"></span>
+              <span>SYSTEM ONLINE</span>
             </div>
 
             {user ? (
-              <div className="flex items-center space-x-2.5">
+              <div className="flex items-center space-x-3">
                 <Link 
                   to="/dashboard"
-                  className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-light border border-border text-xs text-text-light hover:border-primary/40 transition"
+                  className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-cyber-card border border-cyber-border text-xs text-cyber-text font-mono hover:border-cyber-cyan/40 transition"
                 >
-                  <UserCheck className="w-4 h-4 text-primary" />
-                  <span className="truncate max-w-[130px] font-medium">{user.email || 'Client Portal'}</span>
+                  <UserCheck className="w-4 h-4 text-cyber-cyan" />
+                  <span className="truncate max-w-[120px]">{user.email || 'Client Portal'}</span>
                 </Link>
                 <button
                   onClick={onLogout}
-                  className="px-3.5 py-1.5 rounded-full border border-border text-xs text-text-dark hover:text-white hover:bg-white/5 transition"
+                  className="px-3.5 py-1.5 rounded-lg border border-cyber-border text-xs text-cyber-muted hover:text-white hover:bg-white/5 transition font-mono"
                 >
                   Sign Out
                 </button>
@@ -86,11 +100,11 @@ export default function Navbar({ user, onLogout }) {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/auth"
-                  className="btn btn-primary btn-sm"
+                  className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-semibold text-xs hover:opacity-95 transition-all shadow-cyber-cyan"
                 >
-                  <Lock className="w-3.5 h-3.5" />
+                  <Lock className="w-3.5 h-3.5 text-black" />
                   <span>Client Access</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5 text-black" />
                 </Link>
               </div>
             )}
@@ -100,10 +114,9 @@ export default function Navbar({ user, onLogout }) {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-xl bg-light border border-border text-text hover:text-primary transition"
-              aria-label="Toggle menu"
+              className="p-2 rounded-lg bg-cyber-card border border-cyber-border text-cyber-text hover:text-cyber-cyan"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
@@ -111,7 +124,7 @@ export default function Navbar({ user, onLogout }) {
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden px-4 pt-2 pb-6 bg-light/95 border-b border-border space-y-3">
+        <div className="md:hidden px-4 pt-2 pb-6 bg-cyber-card/95 border-b border-cyber-border space-y-3">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = currentPath === link.path;
@@ -120,8 +133,8 @@ export default function Navbar({ user, onLogout }) {
                 key={link.path}
                 to={link.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition ${
-                  isActive ? 'bg-primary/10 text-primary border border-primary/30' : 'text-text-dark'
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition ${
+                  isActive ? 'bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30' : 'text-cyber-muted'
                 }`}
               >
                 <div className="flex items-center space-x-3">
@@ -129,7 +142,7 @@ export default function Navbar({ user, onLogout }) {
                   <span>{link.label}</span>
                 </div>
                 {link.isSecOps && (
-                  <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  <span className="text-[9px] font-mono uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30">
                     SECOPS
                   </span>
                 )}
@@ -137,14 +150,14 @@ export default function Navbar({ user, onLogout }) {
             );
           })}
           
-          <div className="pt-3 border-t border-border flex flex-col space-y-2">
+          <div className="pt-3 border-t border-cyber-border flex flex-col space-y-2">
             {user ? (
               <button
                 onClick={() => {
                   onLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-2.5 rounded-full border border-border text-sm text-text-dark font-mono"
+                className="w-full py-2.5 rounded-lg border border-cyber-border text-sm text-cyber-muted font-mono"
               >
                 Sign Out ({user.email || 'Client'})
               </button>
@@ -152,9 +165,9 @@ export default function Navbar({ user, onLogout }) {
               <Link
                 to="/auth"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full btn btn-primary text-sm py-3 justify-center"
+                className="w-full py-3 rounded-lg bg-cyber-cyan text-black font-semibold text-sm text-center flex items-center justify-center space-x-2"
               >
-                <Lock className="w-4 h-4" />
+                <Lock className="w-4 h-4 text-black" />
                 <span>Client Portal Access</span>
               </Link>
             )}
